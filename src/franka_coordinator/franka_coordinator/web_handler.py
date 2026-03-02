@@ -509,29 +509,65 @@ class WebHandler(Node):
     def _request_motion_confirmation(self, target: str, action: str):
         """Request user confirmation before executing motion."""
         try:
-            rp = self.latest_robot_position
-            if rp:
-                position_line = (
-                    f"\n• Position: X={rp['x']:+.3f} m, Y={rp['y']:+.3f} m, Z={rp['z']:+.3f} m"
-                )
+            # Special messages for go_home and dance
+            if action == 'go_home':
+                confirmation_message = {
+                    'type': 'confirmation_request',
+                    'sender': 'system',
+                    'agent_name': '🏠 Home Position',
+                    'message': (
+                        f'Ready to execute: **Return to Home Position**\n\n'
+                        f'📋 Action plan:\n'
+                        f'• Move robot to safe home configuration\n'
+                        f'• Reset gripper to default state\n'
+                        f'• Prepare for next task'
+                    ),
+                    'action': action,
+                    'target': target,
+                    'timestamp': datetime.now().isoformat()
+                }
+            elif action == 'dance':
+                confirmation_message = {
+                    'type': 'confirmation_request',
+                    'sender': 'system',
+                    'agent_name': '💃 Dance Sequence',
+                    'message': (
+                        f'Ready to execute: **Dance Performance**\n\n'
+                        f'📋 Action plan:\n'
+                        f'• Execute creative motion sequence\n'
+                        f'• 7 coordinated movements\n'
+                        f'• Duration: ~20 seconds\n'
+                        f'• Returns to safe position when complete'
+                    ),
+                    'action': action,
+                    'target': target,
+                    'timestamp': datetime.now().isoformat()
+                }
             else:
-                position_line = ''
-            
-            confirmation_message = {
-                'type': 'confirmation_request',
-                'sender': 'system',
-                'agent_name': '⚙️ Motion Controller',
-                'message': (
-                    f'Ready to execute: **{action} {target}**\n\n'
-                    f'📋 Action plan:\n'
-                    f'• Approach object at detected location{position_line}\n'
-                    f'• Execute {action} maneuver\n'
-                    f'• Return to safe position'
-                ),
-                'action': action,
-                'target': target,
-                'timestamp': datetime.now().isoformat()
-            }
+                # Standard position-based confirmation
+                rp = self.latest_robot_position
+                if rp and rp.get('x') is not None and rp.get('y') is not None and rp.get('z') is not None:
+                    position_line = (
+                        f"\n• Position: X={rp['x']:+.3f} m, Y={rp['y']:+.3f} m, Z={rp['z']:+.3f} m"
+                    )
+                else:
+                    position_line = ''
+                
+                confirmation_message = {
+                    'type': 'confirmation_request',
+                    'sender': 'system',
+                    'agent_name': '⚙️ Motion Controller',
+                    'message': (
+                        f'Ready to execute: **{action} {target}**\n\n'
+                        f'📋 Action plan:\n'
+                        f'• Approach object at detected location{position_line}\n'
+                        f'• Execute {action} maneuver\n'
+                        f'• Return to safe position'
+                    ),
+                    'action': action,
+                    'target': target,
+                    'timestamp': datetime.now().isoformat()
+                }
             
             self.web_response_pub.publish(
                 String(data=json.dumps(confirmation_message))
@@ -545,8 +581,21 @@ class WebHandler(Node):
     def handle_target_position_info(self, msg: String):
         """Cache robot-frame position; if confirmation is still pending, send it now with coords."""
         try:
-            self.latest_robot_position = json.loads(msg.data)
-            rp = self.latest_robot_position
+            rp = json.loads(msg.data)
+            
+            # Special handling for go_home and dance - no position info needed
+            if rp.get('skip_vlm', False):
+                self.get_logger().info(f'Handling {rp.get("action")} confirmation (no position)')
+                # Don't cache this position since it has None values
+                if self.confirmation_pending and self.pending_motion:
+                    self.confirmation_pending = False
+                    pm = self.pending_motion
+                    self._request_motion_confirmation(pm['target'], pm['action'])
+                return
+            
+            # Cache position for normal actions
+            self.latest_robot_position = rp
+            
             self.get_logger().info(
                 f'Robot position cached: '
                 f'X={rp["x"]:+.3f} Y={rp["y"]:+.3f} Z={rp["z"]:+.3f}'

@@ -362,6 +362,28 @@ class FrankaCoordinator(Node):
             center = grounding.get('center', None)  # Use center directly from VLM
             action = grounding.get('action', 'locate')  # pick, place, locate
             
+            # Special handling for go_home and dance - skip VLM processing
+            if grounding.get('skip_vlm', False) and action in ['go_home', 'dance']:
+                self.get_logger().info(f'🏠 Processing {action} command - skipping VLM, requesting confirmation')
+                # Store action for confirmation flow
+                self.last_action = action
+                self.last_target_name = target
+                self.last_target_position = None  # No position needed
+                
+                # Publish to web_handler to trigger confirmation
+                pos_info = {
+                    'target': target,
+                    'action': action,
+                    'x': None,
+                    'y': None,
+                    'z': None,
+                    'skip_vlm': True
+                }
+                self.target_position_info_pub.publish(
+                    String(data=json.dumps(pos_info))
+                )
+                return
+            
             if not center or self.latest_depth_image is None or self.camera_intrinsics is None:
                 self.get_logger().warn(
                     f'⚠️  Cannot resolve 3D position for "{target}": '

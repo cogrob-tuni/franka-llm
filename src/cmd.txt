@@ -1,17 +1,3 @@
-franka bring up:
-source /home/arash/franka_ros2_ws/install/setup.zsh
-ros2 launch franka_bringup franka.launch.py robot_ip:=172.16.0.2
-moveit:
-source /home/arash/franka_ros2_ws/install/setup.zsh && source /home/arash/workspaces/isaac_ros-dev/install/setup.zsh && ros2 launch franka_fr3_moveit_config moveit.launch.py robot_ip:=172.16.0.2
-
-
-ollama:
-http://localhost:8080
-ros2 run franka_llm_planner llm_node
-ros2 topic pub /user_command std_msgs/msg/String "{data: 'pick the red cube from the table and place it in x position'}" --once
-
-
-
 Updated (Feb 5th 2026):
 moveit activation:
 cd ~/franka_ros2_ws && source install/setup.zsh && ros2 launch franka_fr3_moveit_config moveit.launch.py robot_ip:=172.16.0.2 use_fake_hardwar:=false

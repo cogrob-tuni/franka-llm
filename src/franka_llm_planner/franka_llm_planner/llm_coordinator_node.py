@@ -54,6 +54,7 @@ class LLMCoordinator(Node):
         
         # Publishers for different agents
         self.vlm_request_pub = self.create_publisher(String, '/vlm_request', 10)
+        self.vlm_grounding_pub = self.create_publisher(String, '/vlm_grounding', 10)  # For go_home/dance
         self.motion_command_pub = self.create_publisher(String, '/motion_command', 10)
         self.response_pub = self.create_publisher(String, '/coordinator_response', 10)
         self.status_pub = self.create_publisher(String, '/coordinator/status', 10)
@@ -322,6 +323,23 @@ Examples:
         if target_agent == 'none':
             response = decision.get('response', 'I\'m here to help!')
             self.publish_response(response)
+            return
+        
+        # Special handling for go_home and dance: they need confirmation but not VLM
+        if target_agent == 'both' and action in ['go_home', 'dance']:
+            self.get_logger().info(f'Action "{action}" requires confirmation - creating direct confirmation request')
+            # Send a mock VLM grounding message to trigger confirmation flow
+            grounding_msg = {
+                'action': action,
+                'target': 'home_position' if action == 'go_home' else 'dance_sequence',
+                'center': None,  # No actual position needed
+                'bbox': [],
+                'timestamp': datetime.now().isoformat(),
+                'skip_vlm': True  # Flag to coordinator to skip 3D conversion
+            }
+            self.vlm_grounding_pub.publish(
+                String(data=json.dumps(grounding_msg))
+            )
             return
         
         if target_agent == 'vlm' or target_agent == 'both':
