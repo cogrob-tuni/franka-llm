@@ -40,7 +40,25 @@ class WebHandler(Node):
             'bridge_state': 'Online',
             'last_detection': 'None',
             'last_action': 'None',
-            'timestamp': datetime.now().isoformat()
+            'timestamp': datetime.now().isoformat(),
+            'config': {
+                'llm_model': 'Loading...',
+                'llm_temperature': 'Loading...',
+                'vlm_model': 'Loading...',
+                'vlm_temperature': 'Loading...',
+                'ollama_url': 'Loading...',
+                'aruco_offset_x': 'Loading...',
+                'aruco_offset_y': 'Loading...',
+                'aruco_offset_z': 'Loading...',
+                'safe_height': 'Loading...',
+                'grasp_height': 'Loading...',
+                'handover_height': 'Loading...',
+                'gripper_close': 'Loading...',
+                'gripper_open': 'Loading...',
+                'velocity_default': 'Loading...',
+                'velocity_slow': 'Loading...',
+                'velocity_fast': 'Loading...'
+            }
         }
         # Per-component last-seen timestamps for staleness detection
         self._last_seen = {
@@ -67,11 +85,12 @@ class WebHandler(Node):
             'camera': {}
         }
         
-        # Debug images directory
-        self.debug_images_dir = Path('/home/arash/franka-llm/debug_images')
+        # Load system configuration to get paths
+        config = self._load_system_config()
         
-        # Load system configuration
-        self._load_system_config()
+        # Debug images directory from config
+        workspace_root = Path(config['paths']['workspace_root']).expanduser()
+        self.debug_images_dir = workspace_root / config['paths']['debug_images']
         
         # Publishers
         # Publish user commands directly to LLM coordinator
@@ -153,24 +172,51 @@ class WebHandler(Node):
         
         self.get_logger().info('Web Handler initialized - integrated with LLM Coordinator')
         
+        # Load config to status immediately so it's available when status page loads
+        self._load_config_to_status()
+        
         # Send welcome message with system info after a short delay (one-shot)
         self.welcome_timer = self.create_timer(2.0, self._send_welcome_message_once)
     
-    def _load_system_config(self):
+    def _load_system_config(self) -> dict:
         """Load configuration from config.yaml."""
         try:
-            config_path = Path('/home/arash/franka-llm/config.yaml')
-            if config_path.exists():
-                with open(config_path, 'r') as f:
-                    config = yaml.safe_load(f)
-                    self.system_config['llm'] = config.get('llm', {})
-                    self.system_config['vlm'] = config.get('vlm', {})
-                    self.system_config['camera'] = config.get('camera', {})
-                    self.llm_model_name = self.system_config['llm'].get('model', 'LLM')
-                    self.vlm_model_name = self.system_config['vlm'].get('model', 'VLM')
-                self.get_logger().info(f'Loaded config: LLM={self.llm_model_name}, VLM={self.vlm_model_name}')
+            config_path = self._find_config_file()
+            self.get_logger().info(f'Loading config from: {config_path}')
+            
+            with open(config_path, 'r') as f:
+                config = yaml.safe_load(f)
+            
+            # Cache specific sections
+            self.system_config['llm'] = config.get('llm', {})
+            self.system_config['vlm'] = config.get('vlm', {})
+            self.system_config['camera'] = config.get('camera', {})
+            self.llm_model_name = self.system_config['llm'].get('model', 'LLM')
+            self.vlm_model_name = self.system_config['vlm'].get('model', 'VLM')
+            
+            self.get_logger().info(f'Loaded config: LLM={self.llm_model_name}, VLM={self.vlm_model_name}')
+            return config
         except Exception as e:
             self.get_logger().warn(f'Could not load config.yaml: {e}')
+            return {'paths': {'workspace_root': '~/franka-llm', 'debug_images': 'debug_images'}}
+    
+    def _find_config_file(self) -> Path:
+        """Find config.yaml in workspace"""
+        current_path = Path(__file__).resolve()
+        
+        # Try walking up the directory tree
+        for parent in [current_path] + list(current_path.parents):
+            candidate = parent / 'config.yaml'
+            if candidate.exists():
+                return candidate
+        
+        # Fallback to workspace root
+        workspace_root = Path.home() / 'franka-llm'
+        candidate = workspace_root / 'config.yaml'
+        if candidate.exists():
+            return candidate
+        
+        raise FileNotFoundError('Could not find config.yaml')
     
     def _send_welcome_message_once(self):
         """Send welcome message once and cancel timer."""
@@ -207,8 +253,49 @@ class WebHandler(Node):
                 String(data=json.dumps(welcome_message))
             )
             self.get_logger().info('Sent welcome message with system configuration')
+            
         except Exception as e:
             self.get_logger().error(f'Error sending welcome message: {e}')
+    
+    def _load_config_to_status(self):
+        """Load configuration details into status cache for status page display."""
+        try:
+            # Load full config
+            config_path = self._find_config_file()
+            with open(config_path, 'r') as f:
+                full_config = yaml.safe_load(f)
+            
+            # Extract relevant config sections
+            llm = full_config.get('llm', {})
+            vlm = full_config.get('vlm', {})
+            camera = full_config.get('camera', {})
+            robot = full_config.get('robot', {})
+            
+            # Store in status cache for status page
+            with self.status_lock:
+                self.status_cache['config'] = {
+                    'llm_model': llm.get('model', 'N/A'),
+                    'llm_temperature': llm.get('temperature', 'N/A'),
+                    'vlm_model': vlm.get('model', 'N/A'),
+                    'vlm_temperature': vlm.get('temperature', 'N/A'),
+                    'ollama_url': llm.get('ollama_url', 'N/A'),
+                    'aruco_offset_x': camera.get('aruco_offset_x', 'N/A'),
+                    'aruco_offset_y': camera.get('aruco_offset_y', 'N/A'),
+                    'aruco_offset_z': camera.get('aruco_offset_z', 'N/A'),
+                    'safe_height': robot.get('safe_height', 'N/A'),
+                    'grasp_height': robot.get('grasp_height', 'N/A'),
+                    'handover_height': robot.get('handover_height', 'N/A'),
+                    'gripper_close': robot.get('gripper_close_width', 'N/A'),
+                    'gripper_open': robot.get('gripper_open_width', 'N/A'),
+                    'velocity_default': robot.get('default_velocity_scaling', 'N/A'),
+                    'velocity_slow': robot.get('slow_velocity_scaling', 'N/A'),
+                    'velocity_fast': robot.get('fast_velocity_scaling', 'N/A')
+                }
+            
+            self.get_logger().info('Loaded configuration details into status cache')
+            
+        except Exception as e:
+            self.get_logger().error(f'Error loading config to status: {e}')
     
     def handle_web_request(self, msg: String):
         """Handle incoming requests from web dashboard."""
@@ -803,6 +890,12 @@ class WebHandler(Node):
         self.web_status_pub.publish(
             String(data=json.dumps(status_to_send))
         )
+        
+        # Debug log once to confirm config is being sent
+        if not hasattr(self, '_logged_config_send'):
+            self._logged_config_send = True
+            if 'config' in status_to_send:
+                self.get_logger().info(f'Status includes config: {list(status_to_send["config"].keys())}')
     
     def process_web_input(self, user_input: str):
         """

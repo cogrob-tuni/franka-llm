@@ -53,11 +53,14 @@ class ArucoTransformer:
             v: Pixel y coordinate (vertical)
             z: Depth in meters
             camera_intrinsics: pyrealsense2 intrinsics object
-            robot_offset_x: X offset for robot calibration (default: 0.49m)
-            robot_offset_z: Z offset for robot calibration (default: 0.15m)
+            robot_offset_x: X offset for robot calibration (default: 0.49m from config.yaml)
+            robot_offset_z: Z offset for robot calibration (default: 0.15m from config.yaml)
         
         Returns:
             tuple: (robot_x, robot_y, robot_z) in meters
+        
+        Note: This is a standalone test utility. Main system loads these values from config.yaml
+        """
         """
         # Step 1: Deproject pixel to camera frame
         X_cam = np.array([

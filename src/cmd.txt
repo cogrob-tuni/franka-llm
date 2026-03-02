@@ -10,13 +10,6 @@ http://localhost:8080
 ros2 run franka_llm_planner llm_node
 ros2 topic pub /user_command std_msgs/msg/String "{data: 'pick the red cube from the table and place it in x position'}" --once
 
-Cycle:
-LLM thinks: "I need to locate the red cup first"
-LLM acts: call_perception("find red cup")
-VLM observes: "Red cup at position (0.5, 0.2, 0.1)"
-LLM thinks: "Now I can pick it"
-LLM acts: call_motion("pick", position)
-
 
 
 Updated (Feb 5th 2026):

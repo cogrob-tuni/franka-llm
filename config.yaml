@@ -15,6 +15,44 @@ vlm:
   temperature: 0.0                    # Lower = more consistent/deterministic
   timeout: 300                        # Extended timeout for large 32B model (5 minutes)
 
+# Paths Configuration
+paths:
+  workspace_root: "~/franka-llm"      # Workspace root directory (use ~ for home)
+  debug_images: "debug_images"        # Debug images directory (relative to workspace_root)
+  calibration_dir: "src/realsense_cameras/new_calibration"  # ArUco calibration (relative to workspace_root)
+  recordings: "recordings"            # Video recordings directory (relative to workspace_root)
+
+# Camera Calibration - ArUco Marker to Robot Base Transform
+camera:
+  aruco_offset_x: 0.49                # X offset from ArUco marker to robot base (meters)
+  aruco_offset_y: -0.02                 # Y offset from ArUco marker to robot base (meters)
+  aruco_offset_z: 0.15                # Z offset from ArUco marker to robot base (meters) - For pick task is hardcoded in motion executor
+  ee_camera_topic: "/cameras/ee/ee_camera/color/image_raw"
+  depth_topic: "/cameras/ee/ee_camera/aligned_depth_to_color/image_raw"
+  camera_info_topic: "/cameras/ee/ee_camera/color/camera_info"
+
+# Robot Motion Constants
+robot:
+  # Placement offsets
+  offset_placement_distance: 0.08     # Distance for offset placement (meters) - 8cm
+  held_object_height: 0.03            # Assumed height of held object for stacking (meters) - 3cm
+  placement_clearance: 0.015          # Clearance above object when stacking (meters) - 1.5cm
+  handover_height: 0.30               # Fixed height for handover actions (meters) - 30cm
+  
+  # Motion execution
+  safe_height: 0.60                   # Safe approach height (meters)
+  grasp_height: 0.14                  # Height for grasp execution (meters)
+  position_offset_x: 0.0             # X offset for positioning (meters)
+  
+  # Gripper settings
+  gripper_open_width: 0.08            # Fully open gripper width (meters) - 80mm
+  gripper_close_width: 0.03           # Closed gripper width for grasp (meters) - 30mm
+  
+  # Motion parameters
+  default_velocity_scaling: 0.5       # Default velocity scaling factor (0.0-1.0)
+  slow_velocity_scaling: 0.1          # Slow/careful velocity scaling
+  fast_velocity_scaling: 0.8          # Fast motion velocity scaling
+  
 # Debug Settings
 debug:
   save_images: true                   # Save annotated images to debug_images/ folder

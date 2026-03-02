@@ -47,15 +47,12 @@ class VLMNode(Node):
         self.latest_image = None
         self.latest_depth = None
         
-        # Camera topics (hardcoded, simple)
-        self.camera_topic = "/cameras/ee/ee_camera/color/image_raw"
-        self.depth_topic = "/cameras/ee/ee_camera/aligned_depth_to_color/image_raw"
-        self.camera_info_topic = "/cameras/ee/ee_camera/color/camera_info"
+        # Camera topics (from config)
         self.use_compressed = True
         
-        # Setup debug directory - save to workspace root
-        if self.save_images:
-            self.debug_dir = Path('/home/arash/franka-llm/debug_images')
+        # Setup debug directory
+        if self.save_images and self.debug_dir_path:
+            self.debug_dir = self.debug_dir_path
             self.debug_dir.mkdir(exist_ok=True, parents=True)
             self.get_logger().info(f'Debug images will be saved to: {self.debug_dir}')
         else:
@@ -89,7 +86,7 @@ class VLMNode(Node):
     
     def _load_config(self):
         """Load configuration from config.yaml"""
-        config_path = Path('/home/arash/franka-llm/config.yaml')
+        config_path = self._find_config_file()
         
         self.get_logger().info(f'Loading config from: {config_path}')
         
@@ -102,8 +99,35 @@ class VLMNode(Node):
         self.timeout = config['vlm']['timeout']
         self.temperature = config['vlm'].get('temperature', 0.3)
         
+        # Camera topics from config
+        self.camera_topic = config['camera']['ee_camera_topic']
+        self.depth_topic = config['camera']['depth_topic']
+        self.camera_info_topic = config['camera']['camera_info_topic']
+        
         # Debug settings
         self.save_images = config['debug']['save_images']
+        
+        # Paths
+        workspace_root = Path(config['paths']['workspace_root']).expanduser()
+        self.debug_dir_path = workspace_root / config['paths']['debug_images'] if self.save_images else None
+    
+    def _find_config_file(self) -> Path:
+        """Find config.yaml in workspace"""
+        current_path = Path(__file__).resolve()
+        
+        # Try walking up the directory tree
+        for parent in [current_path] + list(current_path.parents):
+            candidate = parent / 'config.yaml'
+            if candidate.exists():
+                return candidate
+        
+        # Fallback to workspace root
+        workspace_root = Path.home() / 'franka-llm'
+        candidate = workspace_root / 'config.yaml'
+        if candidate.exists():
+            return candidate
+        
+        raise FileNotFoundError('Could not find config.yaml')
     
     def _setup_subscribers(self):
         """Setup ROS subscribers - permanently subscribed"""

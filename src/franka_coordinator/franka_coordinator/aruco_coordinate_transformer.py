@@ -27,6 +27,7 @@ class ArucoCoordinateTransformer:
                  node: Node,
                  calibration_dir: str = None,
                  robot_offset_x: float = 0.49,
+                 robot_offset_y: float = 0.0,
                  robot_offset_z: float = 0.15):
         """
         Initialize ArUco-based coordinate transformer.
@@ -35,10 +36,12 @@ class ArucoCoordinateTransformer:
             node: ROS 2 node for logging
             calibration_dir: Directory containing rotation_vector.pkl and translational_vector.pkl
             robot_offset_x: X offset for robot calibration (default: 0.49m)
+            robot_offset_y: Y offset for robot calibration (default: 0.0m)
             robot_offset_z: Z offset for robot calibration (default: 0.15m)
         """
         self.node = node
         self.robot_offset_x = robot_offset_x
+        self.robot_offset_y = robot_offset_y
         self.robot_offset_z = robot_offset_z
         
         # Camera intrinsics (will be set from CameraInfo)
@@ -55,9 +58,10 @@ class ArucoCoordinateTransformer:
             pkg_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
             calibration_dir = os.path.join(pkg_dir, 'realsense_cameras', 'new_calibration')
             # If the derived path doesn't exist (e.g. running from install/),
-            # fall back to the known absolute source location
+            # fall back to workspace root
             if not os.path.isdir(calibration_dir):
-                calibration_dir = '/home/arash/franka-llm/src/realsense_cameras/new_calibration'
+                workspace_root = os.path.expanduser('~/franka-llm')
+                calibration_dir = os.path.join(workspace_root, 'src', 'realsense_cameras', 'new_calibration')
         
         self.calibration_dir = calibration_dir
         
@@ -71,7 +75,7 @@ class ArucoCoordinateTransformer:
             f'   Calibration dir: {calibration_dir}'
         )
         self.node.get_logger().info(
-            f'   Robot offsets: X={robot_offset_x}m, Z={robot_offset_z}m'
+            f'   Robot offsets: X={robot_offset_x}m, Y={robot_offset_y}m, Z={robot_offset_z}m'
         )
     
     def _load_calibration(self):
@@ -185,7 +189,7 @@ class ArucoCoordinateTransformer:
         # Transform to robot frame
         # Based on calibration: robot frame is offset from ArUco marker
         robot_x = -point_aruco[1] + self.robot_offset_x
-        robot_y = -point_aruco[0] - 0.01
+        robot_y = -point_aruco[0] + self.robot_offset_y
         robot_z = point_aruco[2] + self.robot_offset_z
         
         point_robot = np.array([robot_x, robot_y, robot_z], dtype=np.float64)

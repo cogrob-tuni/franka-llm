@@ -27,7 +27,15 @@ class ArmCameraRecorder(Node):
         
         # Setup output directory
         if output_dir is None:
-            output_dir = '/home/arash/franka-llm/recordings'
+            # Try to load from config
+            try:
+                config = self._load_config()
+                workspace_root = Path(config['paths']['workspace_root']).expanduser()
+                output_dir = str(workspace_root / config['paths']['recordings'])
+            except:
+                # Fallback to default
+                workspace_root = Path.home() / 'franka-llm'
+                output_dir = str(workspace_root / 'recordings')
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True, parents=True)
         
@@ -56,6 +64,26 @@ class ArmCameraRecorder(Node):
         self.get_logger().info(f'   Output directory: {self.output_dir}')
         self.get_logger().info(f'   Press "r" to start/stop recording')
         self.get_logger().info(f'   Press "q" to quit')
+    
+    def _load_config(self) -> dict:
+        """Load configuration from config.yaml"""
+        current_path = Path(__file__).resolve()
+        
+        # Try walking up the directory tree
+        for parent in [current_path] + list(current_path.parents):
+            candidate = parent / 'config.yaml'
+            if candidate.exists():
+                with open(candidate, 'r') as f:
+                    return yaml.safe_load(f)
+        
+        # Fallback to workspace root
+        workspace_root = Path.home() / 'franka-llm'
+        candidate = workspace_root / 'config.yaml'
+        if candidate.exists():
+            with open(candidate, 'r') as f:
+                return yaml.safe_load(f)
+        
+        raise FileNotFoundError('Could not find config.yaml')
     
     def image_callback(self, msg: Image):
         """Handle raw image messages"""
@@ -145,7 +173,7 @@ class ArmCameraRecorder(Node):
 def main(args=None):
     parser = argparse.ArgumentParser(description='Record video from robot arm camera')
     parser.add_argument('--output-dir', type=str, default=None,
-                       help='Output directory for recordings (default: /home/arash/franka-llm/recordings)')
+                       help='Output directory for recordings (default: from config or ~/franka-llm/recordings)')
     parser.add_argument('--no-compressed', action='store_true',
                        help='Use raw images instead of compressed')
     

@@ -14,6 +14,24 @@ class StatusModule {
         this.lastDetection    = document.getElementById('lastDetection');
         this.lastAction       = document.getElementById('lastAction');
         this.cameraState      = document.getElementById('cameraState');
+        
+        // Config elements
+        this.cfgLlmModel       = document.getElementById('cfgLlmModel');
+        this.cfgLlmTemp        = document.getElementById('cfgLlmTemp');
+        this.cfgVlmModel       = document.getElementById('cfgVlmModel');
+        this.cfgVlmTemp        = document.getElementById('cfgVlmTemp');
+        this.cfgOllamaUrl      = document.getElementById('cfgOllamaUrl');
+        this.cfgOffsetX        = document.getElementById('cfgOffsetX');
+        this.cfgOffsetY        = document.getElementById('cfgOffsetY');
+        this.cfgOffsetZ        = document.getElementById('cfgOffsetZ');
+        this.cfgSafeHeight     = document.getElementById('cfgSafeHeight');
+        this.cfgGraspHeight    = document.getElementById('cfgGraspHeight');
+        this.cfgHandoverHeight = document.getElementById('cfgHandoverHeight');
+        this.cfgGripperRange   = document.getElementById('cfgGripperRange');
+        this.cfgVelDefault     = document.getElementById('cfgVelDefault');
+        this.cfgVelSlow        = document.getElementById('cfgVelSlow');
+        this.cfgVelFast        = document.getElementById('cfgVelFast');
+        
         this.monitoringInterval = null;
         this.subscribed = false;
         this._addNeutralStyle();
@@ -115,6 +133,31 @@ class StatusModule {
             this.lastAction.className = 'status-value neutral';
             this.lastAction.textContent = lastAction;
         }
+        
+        // Update configuration display if present
+        if (status.config) {
+            this.updateConfigDisplay(status.config);
+        }
+    }
+    
+    updateConfigDisplay(config) {
+        if (this.cfgLlmModel) this.cfgLlmModel.textContent = config.llm_model || '-';
+        if (this.cfgLlmTemp) this.cfgLlmTemp.textContent = config.llm_temperature || '-';
+        if (this.cfgVlmModel) this.cfgVlmModel.textContent = config.vlm_model || '-';
+        if (this.cfgVlmTemp) this.cfgVlmTemp.textContent = config.vlm_temperature || '-';
+        if (this.cfgOllamaUrl) this.cfgOllamaUrl.textContent = config.ollama_url || '-';
+        if (this.cfgOffsetX) this.cfgOffsetX.textContent = config.aruco_offset_x !== 'N/A' ? `${config.aruco_offset_x}m` : '-';
+        if (this.cfgOffsetY) this.cfgOffsetY.textContent = config.aruco_offset_y !== 'N/A' ? `${config.aruco_offset_y}m` : '-';
+        if (this.cfgOffsetZ) this.cfgOffsetZ.textContent = config.aruco_offset_z !== 'N/A' ? `${config.aruco_offset_z}m` : '-';
+        if (this.cfgSafeHeight) this.cfgSafeHeight.textContent = config.safe_height !== 'N/A' ? `${config.safe_height}m` : '-';
+        if (this.cfgGraspHeight) this.cfgGraspHeight.textContent = config.grasp_height !== 'N/A' ? `${config.grasp_height}m` : '-';
+        if (this.cfgHandoverHeight) this.cfgHandoverHeight.textContent = config.handover_height !== 'N/A' ? `${config.handover_height}m` : '-';
+        if (this.cfgGripperRange && config.gripper_close !== 'N/A' && config.gripper_open !== 'N/A') {
+            this.cfgGripperRange.textContent = `${config.gripper_close}m - ${config.gripper_open}m`;
+        }
+        if (this.cfgVelDefault) this.cfgVelDefault.textContent = config.velocity_default || '-';
+        if (this.cfgVelSlow) this.cfgVelSlow.textContent = config.velocity_slow || '-';
+        if (this.cfgVelFast) this.cfgVelFast.textContent = config.velocity_fast || '-';
     }
 
     // Only update the bridge indicator on the timer — don't blank out component states

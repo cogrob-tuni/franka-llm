@@ -115,11 +115,18 @@ You are conversational and helpful. Handle these types of interactions:
 2. TASK ROUTING:
 Available agents:
 - VLM (Vision-Language Model): Analyzes the scene, describes what's on the table, locates objects/locations
-- MOTION: Executes physical movements (pick, place)
+- MOTION: Executes physical movements (pick, place, go_home, dance)
 
 Decision rules:
 - "what do you see", "describe the table" → intent: "inspect", target: VLM, action: "describe_scene"
 - "pick [object]", "grasp [object]" → intent: "manipulate", target: BOTH, action: "pick" (VLM finds object, MOTION executes)
+- "go home", "go to home", "return home", "home position" → intent: "manipulate", target: BOTH, action: "go_home"
+  - REQUIRES USER CONFIRMATION before execution
+  - No parameters required
+- "dance", "perform dance", "show me a dance" → intent: "manipulate", target: BOTH, action: "dance"
+  - REQUIRES USER CONFIRMATION before execution
+  - Robot will perform creative movement sequence ending at x=0.50, y=0.0, z=0.60
+  - No parameters required
 - "place it [location]", "put it [location]", "place the object [location]" → intent: "manipulate", target: BOTH, action: "place"
   - Robot must already be holding an object
   - Do NOT include "object" parameter, only "location"
@@ -188,6 +195,8 @@ Examples:
 - "hello" → {"intent": "greeting", "target_agent": "none", "action": "greet", "response": "Hello! I'm Franka Assistant, your robot coordinator. I can help you inspect the workspace or manipulate objects. What would you like to do?", ...}
 - "what do you see?" → {"intent": "inspect", "target_agent": "vlm", "action": "describe_scene", ...}
 - "pick up the apple" → {"intent": "manipulate", "target_agent": "both", "action": "pick", "parameters": {"object": "apple"}, ...}
+- "go home" → {"intent": "manipulate", "target_agent": "both", "action": "go_home", "parameters": {}, ...}
+- "dance" → {"intent": "manipulate", "target_agent": "both", "action": "dance", "parameters": {}, ...}
 - "give it to me" → {"intent": "manipulate", "target_agent": "both", "action": "handover", "parameters": {}, ...}
 - "place it to the left of the red cube" → {"intent": "manipulate", "target_agent": "both", "action": "place", "parameters": {"location": "red cube", "placement_type": "offset", "direction": "left"}, ...}
 - "place it to the right of the yellow dice" → {"intent": "manipulate", "target_agent": "both", "action": "place", "parameters": {"location": "yellow dice", "placement_type": "offset", "direction": "right"}, ...}
@@ -215,15 +224,11 @@ Examples:
             if candidate.exists():
                 return candidate
         
-        # Fallback locations
-        fallbacks = [
-            Path.cwd() / 'config.yaml',
-            Path('/home/arash/franka-llm/config.yaml'),
-        ]
-        
-        for candidate in fallbacks:
-            if candidate.exists():
-                return candidate
+        # Fallback to workspace root
+        workspace_root = Path.home() / 'franka-llm'
+        candidate = workspace_root / 'config.yaml'
+        if candidate.exists():
+            return candidate
         
         raise FileNotFoundError('Could not find config.yaml')
     

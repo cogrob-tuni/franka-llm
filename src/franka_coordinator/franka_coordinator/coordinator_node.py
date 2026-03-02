@@ -20,6 +20,8 @@ from datetime import datetime
 from enum import Enum
 import numpy as np
 from cv_bridge import CvBridge
+from pathlib import Path
+import yaml
 from .aruco_coordinate_transformer import ArucoCoordinateTransformer
 
 # Message types (we'll use std_msgs.String with JSON for now)
@@ -36,6 +38,9 @@ class FrankaCoordinator(Node):
     
     def __init__(self):
         super().__init__('franka_coordinator')
+        
+        # Load configuration
+        self.config = self._load_config()
         
         # Status tracking
         self.robot_status = "disconnected"
@@ -55,12 +60,14 @@ class FrankaCoordinator(Node):
         self.last_action = None
         
         # Coordinate transformer (pixel → robot frame) - ArUco-based
+        workspace_root = Path(self.config['paths']['workspace_root']).expanduser()
+        calibration_dir = workspace_root / self.config['paths']['calibration_dir']
         self.transformer = ArucoCoordinateTransformer(
             node=self,
-            # Calibration files are in src/realsense_cameras/new_calibration/
-            calibration_dir=None,  # Uses default path
-            robot_offset_x=0.49,  # X offset from ArUco marker to robot base
-            robot_offset_z=0.15   # Z offset from ArUco marker to robot base
+            calibration_dir=str(calibration_dir),
+            robot_offset_x=self.config['camera']['aruco_offset_x'],
+            robot_offset_y=self.config['camera']['aruco_offset_y'],
+            robot_offset_z=self.config['camera']['aruco_offset_z']
         )
         
         # Publisher for outgoing commands
@@ -147,6 +154,32 @@ class FrankaCoordinator(Node):
         
         self.get_logger().info('Franka Coordinator initialized')
         self.publish_status()
+    
+    def _load_config(self) -> dict:
+        """Load configuration from config.yaml"""
+        config_path = self._find_config_file()
+        self.get_logger().info(f'Loading config from: {config_path}')
+        
+        with open(config_path, 'r') as f:
+            return yaml.safe_load(f)
+    
+    def _find_config_file(self) -> Path:
+        """Find config.yaml in workspace"""
+        current_path = Path(__file__).resolve()
+        
+        # Try walking up the directory tree
+        for parent in [current_path] + list(current_path.parents):
+            candidate = parent / 'config.yaml'
+            if candidate.exists():
+                return candidate
+        
+        # Fallback to workspace root
+        workspace_root = Path.home() / 'franka-llm'
+        candidate = workspace_root / 'config.yaml'
+        if candidate.exists():
+            return candidate
+        
+        raise FileNotFoundError('Could not find config.yaml')
     
     def handle_web_request(self, msg: String):
         """
@@ -357,8 +390,8 @@ class FrankaCoordinator(Node):
                 direction = grounding.get('direction', None)
                 
                 if placement_type == 'offset' and direction:
-                    # Apply 8cm offset in specified direction
-                    offset_distance = 0.08  # 8cm
+                    # Apply offset in specified direction
+                    offset_distance = self.config['robot']['offset_placement_distance']
                     
                     if direction == 'left':
                         # Left in robot frame is +Y
@@ -383,10 +416,9 @@ class FrankaCoordinator(Node):
                     
                 elif placement_type == 'stack':
                     # Stacking: use detected Z (table+object height) and add object-being-placed height
-                    # Assuming held object is ~3cm tall (dice/small object)
                     # Z already includes the target object's height from depth camera
-                    held_object_height = 0.03  # 3cm for dice or small objects
-                    clearance = 0.015  # 1.5cm clearance
+                    held_object_height = self.config['robot']['held_object_height']
+                    clearance = self.config['robot']['placement_clearance']
                     offset = np.array([0.0, 0.0, held_object_height + clearance])
                     position_robot = position_robot + offset
                     self.get_logger().info(
@@ -401,10 +433,10 @@ class FrankaCoordinator(Node):
                         f'   Final position: X={position_robot[0]:+.4f}m, Y={position_robot[1]:+.4f}m, Z={position_robot[2]:+.4f}m'
                     )
             
-            # HANDOVER: Override Z to fixed handover height (30cm)
+            # HANDOVER: Override Z to fixed handover height
             elif action == 'handover':
                 import numpy as np
-                handover_height = 0.30  # Fixed 30cm height for handover
+                handover_height = self.config['robot']['handover_height']
                 position_robot[2] = handover_height
                 self.get_logger().info(
                     f'   🤝 HANDOVER: Using detected hand XY with fixed Z={handover_height}m\n'
