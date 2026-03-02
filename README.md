@@ -1,8 +1,24 @@
 # Franka LLM - Intelligent Robotic Manipulation System
 
+**Version**: 1.0.0 | **Status**: Production Ready | **Release Date**: March 2026
+
 **Project**: Natural language-driven robotic manipulation using Vision-Language Models and LLMs  
 **Robot**: Franka Emika FR3 7-DOF arm with gripper  
 **Framework**: ROS2 Jazzy, MoveIt2, Ollama (LLaMA 3.1 + Qwen2.5-VL)
+
+## 🎉 Release v1.0.0
+
+Complete production-ready system for natural language robotic manipulation. This release includes:
+
+- ✅ **Full LLM Integration** - LLaMA 3.1 8B for command understanding
+- ✅ **Advanced Vision** - Qwen2.5-VL 32B for object detection and grounding
+- ✅ **Modern Web Dashboard** - Real-time monitoring, confirmation dialogs, VLM image display
+- ✅ **Complete Documentation** - Setup guides, architecture docs, running instructions
+- ✅ **Centralized Configuration** - Single `config.yaml` for all settings
+- ✅ **Safety First** - User confirmation workflow for all motions
+- ✅ **Production Tested** - Stable on Franka FR3 with real-world objects
+
+[View Release Notes](https://github.com/Arashghsz/franka-llm/releases/tag/v1.0.0)
 
 ## Overview
 
