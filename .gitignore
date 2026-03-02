@@ -25,6 +25,11 @@ src/isaac_ros_cumotion/
 # OS
 .DS_Store
 Thumbs.db
+
+# Local development notes
+src/cmd.txt
+cmd.txt
+
 # yolov8
 yolov8n.pt
 yolov8x.pt

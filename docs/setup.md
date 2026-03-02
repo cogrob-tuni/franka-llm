@@ -2,100 +2,101 @@
 
 ## Prerequisites
 
-- Ubuntu 22.04 LTS (for ROS2 Jazzy)
-- Python 3.10+
+- Ubuntu 22.04 LTS
 - ROS2 Jazzy
-- MoveIt2
+- MoveIt2 (in separate workspace: `~/franka_ros2_ws`)
+- Ollama with models: `llama3.1:8b`, `qwen2.5vl:32b`
+- Python 3.10+
 
 ## Installation
 
-### 1. Clone Repository
+### 1. Install Ollama
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull llama3.1:8b
+ollama pull qwen2.5vl:32b
+```
+
+### 2. Clone Repository
 ```bash
 git clone https://github.com/Arashghsz/franka-llm.git
 cd franka-llm
 ```
 
-### 2. Create Virtual Environment (Optional)
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-```
-
-### 3. Install Python Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Build ROS2 Packages
+### 3. Build ROS2 Packages
 ```bash
 colcon build --symlink-install
-```
-
-### 5. Source Setup
-```bash
 source install/setup.zsh
-# or
-source install/setup.bash
 ```
 
 ## Configuration
 
-### Environment Variables
-```bash
-export FRANKA_ROBOT_IP=192.168.1.100
-export FRANKA_USER=robot
-export CAMERAS_NAMESPACE=/cameras/ee
+Edit `config.yaml` in workspace root:
+
+```yaml
+llm:
+  model: "llama3.1:8b"
+  base_url: "http://localhost:11434"
+
+vlm:
+  model: "qwen2.5vl:32b"
+  base_url: "http://localhost:11434"
+
+camera:
+  aruco_offset_x: 0.0
+  aruco_offset_y: 0.0
+  aruco_offset_z: 0.0
+
+robot:
+  safe_height: 0.60
+  grasp_height: 0.14
+  default_velocity_scaling: 0.1
 ```
 
-### Launch File
+## Running
 
-Run the complete system:
+See **[RUNNING.md](../RUNNING.md)** for complete startup instructions.
+
+**Quick start:**
 ```bash
-ros2 launch franka_coordinator main.launch.py
+./start_system.sh
 ```
 
-Or individual components:
-```bash
-# Vision detection
-ros2 launch franka_vision_detection table_detector.launch.py
-
-# Robot state broadcasting
-ros2 launch franka_robot_state_broadcaster state_broadcaster.launch.py
-
-# LLM planner
-python src/franka_llm_planner/franka_llm_planner/demo.py
-```
+**Access:** http://localhost:8000
 
 ## Verification
 
-Check active topics:
+### Check nodes
 ```bash
-ros2 topic list
+ros2 node list
 ```
 
-Check robot state:
+### Check controllers
 ```bash
-ros2 topic echo /franka_robot_state_broadcaster/robot_state
+ros2 control list_controllers
 ```
 
-Monitor vision detections:
+### Check topics
 ```bash
-ros2 topic echo /detection/detections
+ros2 topic list | grep web
 ```
 
 ## Troubleshooting
 
-### Import Errors
-- Ensure packages are built: `colcon build`
-- Source setup: `source install/setup.zsh`
+**Ollama not running:**
+```bash
+ollama serve
+```
 
-### Connection Issues
-- Verify robot IP address
-- Check firewall rules
-- Ensure ROS2 domain ID matches
+**Controllers not loaded:**
+```bash
+ros2 control load_controller joint_state_broadcaster --set-state active
+ros2 control load_controller franka_robot_state_broadcaster --set-state active
+ros2 control load_controller fr3_arm_controller --set-state active
+```
 
-### Vision Issues
-- Verify camera is connected
-- Check RealSense driver: `realsense-viewer`
-- Ensure calibration files are present
+**Camera issues:**
+```bash
+./restart_node.sh camera
+```
 

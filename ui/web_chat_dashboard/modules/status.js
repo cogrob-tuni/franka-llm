@@ -18,8 +18,10 @@ class StatusModule {
         // Config elements
         this.cfgLlmModel       = document.getElementById('cfgLlmModel');
         this.cfgLlmTemp        = document.getElementById('cfgLlmTemp');
+        this.cfgLlmTimeout     = document.getElementById('cfgLlmTimeout');
         this.cfgVlmModel       = document.getElementById('cfgVlmModel');
         this.cfgVlmTemp        = document.getElementById('cfgVlmTemp');
+        this.cfgVlmTimeout     = document.getElementById('cfgVlmTimeout');
         this.cfgOllamaUrl      = document.getElementById('cfgOllamaUrl');
         this.cfgOffsetX        = document.getElementById('cfgOffsetX');
         this.cfgOffsetY        = document.getElementById('cfgOffsetY');
@@ -142,10 +144,22 @@ class StatusModule {
     
     updateConfigDisplay(config) {
         if (this.cfgLlmModel) this.cfgLlmModel.textContent = config.llm_model || '-';
-        if (this.cfgLlmTemp) this.cfgLlmTemp.textContent = config.llm_temperature || '-';
+        if (this.cfgLlmTemp) this.cfgLlmTemp.textContent = config.llm_temperature !== undefined && config.llm_temperature !== 'N/A' ? config.llm_temperature : '-';
+        if (this.cfgLlmTimeout) this.cfgLlmTimeout.textContent = config.llm_timeout !== undefined && config.llm_timeout !== 'N/A' ? `${config.llm_timeout}s` : '-';
         if (this.cfgVlmModel) this.cfgVlmModel.textContent = config.vlm_model || '-';
-        if (this.cfgVlmTemp) this.cfgVlmTemp.textContent = config.vlm_temperature || '-';
-        if (this.cfgOllamaUrl) this.cfgOllamaUrl.textContent = config.ollama_url || '-';
+        if (this.cfgVlmTemp) this.cfgVlmTemp.textContent = config.vlm_temperature !== undefined && config.vlm_temperature !== 'N/A' ? config.vlm_temperature : '-';
+        if (this.cfgVlmTimeout) this.cfgVlmTimeout.textContent = config.vlm_timeout !== undefined && config.vlm_timeout !== 'N/A' ? `${config.vlm_timeout}s` : '-';
+        if (this.cfgOllamaUrl) {
+            const llmUrl = config.llm_url || '';
+            const vlmUrl = config.vlm_url || '';
+            if (llmUrl === vlmUrl && llmUrl) {
+                this.cfgOllamaUrl.textContent = llmUrl;
+            } else if (llmUrl && vlmUrl) {
+                this.cfgOllamaUrl.textContent = `LLM: ${llmUrl} | VLM: ${vlmUrl}`;
+            } else {
+                this.cfgOllamaUrl.textContent = llmUrl || vlmUrl || '-';
+            }
+        }
         if (this.cfgOffsetX) this.cfgOffsetX.textContent = config.aruco_offset_x !== 'N/A' ? `${config.aruco_offset_x}m` : '-';
         if (this.cfgOffsetY) this.cfgOffsetY.textContent = config.aruco_offset_y !== 'N/A' ? `${config.aruco_offset_y}m` : '-';
         if (this.cfgOffsetZ) this.cfgOffsetZ.textContent = config.aruco_offset_z !== 'N/A' ? `${config.aruco_offset_z}m` : '-';

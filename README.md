@@ -124,7 +124,7 @@ pip install -r requirements.txt  # if exists
 colcon build --symlink-install
 
 # 5. Source setup
-source install/setup.zsh  # or .bash depending on your shell
+source install/setup.sh  # Works for both bash and zsh
 ```
 
 ### Configuration
@@ -154,71 +154,15 @@ robot:
 
 ### Running the System
 
-#### Option 1: Automated Scripts (Recommended)
+See **[RUNNING.md](RUNNING.md)** for complete startup instructions.
 
-Use the provided scripts to start/stop all nodes at once:
-
+**Quick start:**
 ```bash
-cd ~/franka-llm
-
-# Start all nodes in separate terminals
-./start_system.sh
-
-# Stop all nodes
-./stop_system.sh
+./start_system.sh  # Start all nodes
+./stop_system.sh   # Stop all nodes
 ```
 
-The start script will:
-- Launch Ollama server (if not running)
-- Start web UI server on port 8000
-- Start all ROS2 nodes in separate terminal windows
-- Display system status and URLs
-
-#### Option 2: Manual Startup
-
-**IMPORTANT: Start in this order!**
-
-```bash
-# Terminal 1: Start Ollama
-ollama serve
-
-# Terminal 2: Start web UI server (MUST BE FIRST!)
-cd ~/franka-llm/ui
-python3 -m http.server 8000
-
-# Terminal 3: Start rosbridge
-source ~/franka-llm/install/setup.zsh
-ros2 run rosbridge_server rosbridge_websocket
-
-# Terminal 4: Start coordinator
-ros2 run franka_coordinator coordinator_node
-
-# Terminal 5: Start web handler (AFTER web UI server!)
-ros2 run franka_coordinator web_handler
-
-# Terminal 6: Start LLM coordinator
-ros2 run franka_llm_planner llm_coordinator_node
-
-# Terminal 7: Start VLM agent
-ros2 run franka_vlm_agent vlm_node
-
-# Terminal 8: Start motion executor
-ros2 run franka_motion_executor motion_executor_node
-
-# Terminal 9: Start cameras (if not auto-launched)
-ros2 launch realsense_cameras ee_camera.launch.py
-```
-
-### Access Web Dashboard
-
-Open browser: **http://localhost:8000**
-
-The dashboard provides:
-- Chat interface for commands
-- Real-time status display
-- Motion confirmation dialogs
-- System configuration view
-- Camera feed (if enabled)
+**Access:** http://localhost:8000
 
 ## Usage Examples
 
@@ -336,8 +280,30 @@ Each package has detailed testing instructions in its README:
 **Issue**: Robot doesn't move
 - **Fix**:
   - Check MoveIt is running: `ros2 node list | grep move_group`
-  - Check controllers: `ros2 control list_controllers`
-  - Verify robot state: `ros2 topic echo /robot/state`
+  - Check motion executor: `ros2 node list | grep motion_executor`
+  - Verify controllers loaded: `ros2 control list_controllers`
+
+**Issue**: MoveIt controllers not loaded (shows "No controllers are currently loaded!")
+- **Cause**: Controller spawner processes timeout before `ros2_control` connects to robot hardware (172.16.0.2). This is a timing issue with network-connected robots.
+- **Fix**: Manually load controllers after MoveIt starts:
+  ```bash
+  # Wait 15-20 seconds after launching MoveIt, then:
+  ros2 control load_controller joint_state_broadcaster --set-state active
+  ros2 control load_controller franka_robot_state_broadcaster --set-state active
+  ros2 control load_controller fr3_arm_controller --set-state active
+  
+  # Verify all loaded:
+  ros2 control list_controllers
+  ```
+- **Expected output**: All controllers show `[active]`
+- **Note**: The gripper controller may fail to load - this is okay for basic motion testing
+
+**Issue**: Camera "depth stream start failure"
+- **Cause**: RealSense hardware didn't fully reset between sessions
+- **Fix**: 
+  1. Use restart script: `./restart_node.sh camera`
+  2. If still failing: Unplug USB cable, wait 3 seconds, plug back in
+  3. Then restart: `./restart_node.sh camera`
 
 **Issue**: Confirmation not appearing
 - **Fix**:
@@ -359,14 +325,23 @@ Each package has detailed testing instructions in its README:
 ### Debug Tools
 
 ```bash
-# Check all topics
-ros2 topic list
+# Check all nodes running
+ros2 node list
+
+# Check MoveIt controllers status (IMPORTANT!)
+ros2 control list_controllers
+# Should show: joint_state_broadcaster, franka_robot_state_broadcaster, fr3_arm_controller [all active]
+
+# Restart individual nodes
+./restart_node.sh motion     # Motion executor
+./restart_node.sh moveit     # MoveIt (takes 15-20s to initialize)
+./restart_node.sh camera     # RealSense cameras
+./restart_node.sh ui         # Web UI server
 
 # Monitor specific topic
 ros2 topic echo /motion/status
 
 # Check node status
-ros2 node list
 ros2 node info /coordinator_node
 
 # View debug images
@@ -374,7 +349,7 @@ ls ~/franka-llm/debug_images/
 eog ~/franka-llm/debug_images/vlm_debug_*.jpg
 
 # Check configuration loading
-grep "Configuration" <(ros2 run franka_motion_executor motion_executor_node 2>&1)
+grep "Configuration" <(ros2 run franka_motion_executor motion_executor 2>&1)
 ```
 
 ## Development
@@ -454,11 +429,8 @@ grep "Configuration" <(ros2 run franka_motion_executor motion_executor_node 2>&1
 
 ## Documentation
 
-- [Setup Guide](docs/setup.md)
 - [Architecture](docs/architecture.md)
-- [Evaluation](docs/evaluation.md)
-- [ROS Topics](docs/ros_topics.md)
-- [UI Review](docs/ui-review-and-hri-analysis.md)
+- [Setup Guide](docs/setup.md)
 
 ## Citations & References
 
@@ -479,7 +451,7 @@ This is a research project. For questions or collaboration:
 
 ## License
 
-[Add your license here]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 

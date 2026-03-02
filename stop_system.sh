@@ -1,4 +1,4 @@
-#!/usr/bin/env zsh
+#!/usr/bin/env bash
 # Franka LLM System Shutdown Script
 # Stops all running nodes and services
 
@@ -14,8 +14,8 @@ kill_process() {
     
     if pgrep -f "$process_name" > /dev/null; then
         echo "[*] Stopping $display_name..."
-        pkill -f "$process_name" 2>/dev/null || true
-        sleep 0.5
+        pkill -9 -f "$process_name" 2>/dev/null || true
+        sleep 1
     else
         echo "[OK] $display_name not running"
     fi
@@ -24,10 +24,21 @@ kill_process() {
 # Stop ROS2 nodes
 kill_process "coordinator_node" "Coordinator"
 kill_process "web_handler" "Web Handler"
-kill_process "llm_coordinator_node" "LLM Coordinator"
+kill_process "llm_coordinator" "LLM Coordinator"
 kill_process "vlm_node" "VLM Agent"
-kill_process "motion_executor_node" "Motion Executor"
+kill_process "motion_executor" "Motion Executor"
 kill_process "rosbridge_websocket" "Rosbridge"
+
+# Stop MoveIt and all its subprocesses
+echo "[*] Stopping MoveIt..."
+kill_process "franka_fr3_moveit_config" "MoveIt Launch"
+kill_process "move_group" "MoveIt Move Group"
+kill_process "rviz2" "RViz2"
+kill_process "robot_state_publisher" "Robot State Publisher"
+kill_process "joint_state_publisher" "Joint State Publisher"
+kill_process "ros2_control_node" "ROS2 Control"
+kill_process "franka_gripper" "Franka Gripper"
+echo "[OK] All MoveIt processes stopped"
 
 # Stop cameras if running
 kill_process "ee_camera.launch.py" "RealSense Cameras"
@@ -44,7 +55,7 @@ echo ""
 echo "[OK] All nodes stopped!"
 echo ""
 echo "[*] Remaining ROS2 nodes (if any):"
-source "$HOME/franka-llm/install/setup.zsh" 2>/dev/null
+source "$HOME/franka-llm/install/setup.bash" 2>/dev/null
 ros2 node list 2>/dev/null || echo "  (No ROS2 nodes running)"
 echo ""
 echo "[INFO] To restart the system, run: ./start_system.sh"

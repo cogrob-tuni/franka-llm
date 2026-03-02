@@ -363,12 +363,13 @@ class MotionExecutorNode(Node):
     
     def handle_go_home_request(self):
         """Handle go home command - no confirmation needed"""
+        gripper_close = self.config['robot']['gripper_close_width']
         self.get_logger().info('Go home request - executing immediately')
         self.current_action = 'go_home'
         
         try:
             self.publish_status('executing', 'Moving to home position')
-            
+            self.manip.open_gripper(width=0)
             self.get_logger().info('Moving to home position')
             self.manip.move_home()
             time.sleep(1.0)
@@ -391,11 +392,12 @@ class MotionExecutorNode(Node):
             self.publish_status('executing', 'Performing dance routine')
             
             safe_height = self.config['robot']['safe_height']
-            velocity = self.config['robot']['default_velocity_scaling']
+            velocity = self.config['robot']['slow_velocity_scaling']
+            gripper_open = self.config['robot']['gripper_open_width']
+            gripper_close = self.config['robot']['gripper_close_width']
+            self.get_logger().info('Starting dance routine')
             
-            self.get_logger().info('🎭 Starting dance routine')
-            
-            # Dance sequence - creative movements
+            # Dance sequence
             positions = [
                 (0.40, 0.20, 0.50),   # Right
                 (0.40, -0.20, 0.50),  # Left
@@ -405,19 +407,21 @@ class MotionExecutorNode(Node):
                 (0.50, -0.15, 0.45),  # Other diagonal
                 (0.35, 0.0, 0.55),    # Wave motion
             ]
-            
+            self.manip.open_gripper(width=gripper_open)
+
             for i, (x, y, z) in enumerate(positions, 1):
                 self.get_logger().info(f'Dance move {i}/{len(positions)}')
                 self.manip.move_to_position(x, y, z, velocity_scaling=velocity)
                 time.sleep(0.5)
             
             # Final pose
+            self.manip.open_gripper(width=gripper_close)
             self.get_logger().info('Final pose: x=0.50, y=0.0, z=0.60')
             self.manip.move_to_position(0.50, 0.0, 0.60, velocity_scaling=velocity)
             time.sleep(1.0)
             
             self.publish_status('completed', 'Dance routine completed')
-            self.get_logger().info('🎭 Dance routine completed')
+            self.get_logger().info('Dance routine completed')
             
             self.current_action = None
             

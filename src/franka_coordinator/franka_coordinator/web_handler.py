@@ -275,10 +275,13 @@ class WebHandler(Node):
             with self.status_lock:
                 self.status_cache['config'] = {
                     'llm_model': llm.get('model', 'N/A'),
-                    'llm_temperature': llm.get('temperature', 'N/A'),
+                    'llm_temperature': llm.get('temperature') if llm.get('temperature') is not None else 'N/A',
+                    'llm_timeout': llm.get('timeout', 'N/A'),
+                    'llm_url': llm.get('ollama_url', 'N/A'),
                     'vlm_model': vlm.get('model', 'N/A'),
-                    'vlm_temperature': vlm.get('temperature', 'N/A'),
-                    'ollama_url': llm.get('ollama_url', 'N/A'),
+                    'vlm_temperature': vlm.get('temperature') if vlm.get('temperature') is not None else 'N/A',
+                    'vlm_timeout': vlm.get('timeout', 'N/A'),
+                    'vlm_url': vlm.get('ollama_url', 'N/A'),
                     'aruco_offset_x': camera.get('aruco_offset_x', 'N/A'),
                     'aruco_offset_y': camera.get('aruco_offset_y', 'N/A'),
                     'aruco_offset_z': camera.get('aruco_offset_z', 'N/A'),
