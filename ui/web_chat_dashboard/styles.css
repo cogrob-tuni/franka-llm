@@ -14,6 +14,51 @@
     --info: #3b82f6;
 }
 
+/* Eval prompt picker bar */
+.eval-prompt-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px 4px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+}
+
+.eval-select {
+    flex: 1;
+    padding: 5px 8px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--background);
+    color: var(--text);
+    font-size: 0.78rem;
+    cursor: pointer;
+    min-width: 0;
+}
+
+.eval-select:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.eval-insert-btn {
+    padding: 5px 10px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.eval-insert-btn:hover {
+    background: var(--primary-dark);
+}
+
 body.dark-theme {
     --primary: #10a37f;
     --primary-dark: #088860;

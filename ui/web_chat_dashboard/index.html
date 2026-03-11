@@ -56,6 +56,27 @@
                         <!-- Welcome message will be added by chat.js -->
                     </div>
 
+                    <!-- Eval Prompt Picker -->
+                    <div class="eval-prompt-bar">
+                        <select id="evalTask" class="eval-select" title="Task">
+                            <option value="">Task…</option>
+                            <option value="pick">Pick</option>
+                            <option value="place">Place</option>
+                            <option value="handover">Handover</option>
+                        </select>
+                        <select id="evalTrial" class="eval-select" title="Trial">
+                            <option value="">Trial…</option>
+                            <option value="0">Trial 1</option>
+                            <option value="1">Trial 2</option>
+                            <option value="2">Trial 3</option>
+                            <option value="3">Trial 4</option>
+                            <option value="4">Trial 5</option>
+                        </select>
+                        <button id="evalInsertBtn" class="eval-insert-btn" title="Insert prompt into input">
+                            <i class="fas fa-arrow-down"></i> Insert
+                        </button>
+                    </div>
+
                     <!-- Chat Input -->
                     <div class="chat-input-area">
                         <div class="input-wrapper">

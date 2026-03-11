@@ -32,3 +32,43 @@ End-to-end latency per request:
 $$T_{e2e} = T_{\text{LLM}} + T_{\text{VLM}}$$
 
 $T_{\text{LLM}}$ and $T_{\text{VLM}}$ are taken from Ollama's `total_duration` field, which covers load + prefill + decode and matches wall-clock time.
+
+---
+
+## Evaluation Prompts
+
+All prompts below are used verbatim during the benchmark. 5 trials per task × scene pair, ordered easy → hard.
+
+> **Notation** — S = single object, M = multiple objects, O = overlapped objects
+
+> The same 5 prompts are used verbatim for every scene condition (S / M / O).
+
+### Pick
+
+| Trial | Prompt |
+|:---:|---|
+| 1 | pick the yellow dice |
+| 2 | grab the yellow dice |
+| 3 | pick up the yellow dice not the red dice |
+| 4 | can you pick up the yellow dice |
+| 5 | I need you to pick the yellow dice |
+
+### Place
+
+| Trial | Prompt |
+|:---:|---|
+| 1 | place it to the left of the red dice |
+| 2 | put it to the right of the red dice |
+| 3 | place it above the red dice |
+| 4 | place it below the red dice |
+| 5 | put it right side of the red dice |
+
+### Handover
+
+| Trial | Prompt |
+|:---:|---|
+| 1 | give it to me |
+| 2 | hand it over |
+| 3 | pass it to me |
+| 4 | can you give me the dice |
+| 5 | deliver the die carefully to my hand |
