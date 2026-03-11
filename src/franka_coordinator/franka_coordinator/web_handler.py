@@ -15,11 +15,13 @@ from std_msgs.msg import String
 from sensor_msgs.msg import CameraInfo
 from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy
 import json
+import time
 from datetime import datetime
 from threading import Lock
 from pathlib import Path
 import base64
 import yaml
+import requests
 
 
 class WebHandler(Node):
@@ -75,6 +77,9 @@ class WebHandler(Node):
         self.pending_motion = None
         self.latest_robot_position = None  # Cached robot-frame coords from coordinator
         self.confirmation_pending = False  # Waiting for position before showing confirmation
+
+        # Benchmark: wall-clock start time of the current perception-and-planning cycle
+        self._bench_t_start: float = 0.0
         self.vlm_model_name = 'VLM'  # Default, updated from system info
         self.llm_model_name = 'LLM'  # Default, updated from system info
         
@@ -314,6 +319,9 @@ class WebHandler(Node):
                 # Send log to web
                 self._send_log_message('Web Handler', 'Request received, forwarding to Coordinator...')
                 
+                # Start benchmark timer the moment the user prompt is received
+                self._bench_start()
+
                 # Publish to coordinator
                 command_msg = String()
                 command_msg.data = user_message
@@ -575,7 +583,10 @@ class WebHandler(Node):
             self.web_response_pub.publish(
                 String(data=json.dumps(confirmation_message))
             )
-            
+
+            # Record end of perception-and-planning cycle and log benchmark results
+            self._bench_finish(action, target)
+
             self.get_logger().info(f'Requested motion confirmation for: {action} {target}')
             
         except Exception as e:
@@ -625,6 +636,69 @@ class WebHandler(Node):
                 self._request_motion_confirmation(pm['target'], pm['action'])
         except Exception as e:
             self.get_logger().error(f'Error caching robot position: {e}')
+
+    # ------------------------------------------------------------------
+    # Benchmark helpers
+    # ------------------------------------------------------------------
+
+    def _bench_start(self):
+        """Record the wall-clock start of a perception-and-planning cycle."""
+        self._bench_t_start = time.monotonic()
+
+    def _bench_finish(self, action: str, target: str):
+        """Compute latency, query model VRAM, log and send results to web."""
+        elapsed = time.monotonic() - self._bench_t_start
+        llm_mem, vlm_mem = self._query_model_memory()
+
+        # Always log to ROS console for offline collection
+        self.get_logger().info(
+            f'[BENCHMARK] action={action} target={target} '
+            f'latency={elapsed:.2f}s '
+            f'llm_mem={llm_mem:.2f}GB vlm_mem={vlm_mem:.2f}GB'
+        )
+
+        # Also surface results in the web chat
+        mem_parts = []
+        if llm_mem > 0:
+            mem_parts.append(f'LLM mem: **{llm_mem:.2f} GB**')
+        if vlm_mem > 0:
+            mem_parts.append(f'VLM mem: **{vlm_mem:.2f} GB**')
+        mem_str = ' | '.join(mem_parts) if mem_parts else 'mem: unavailable'
+
+        self._send_log_message(
+            '\U0001f4ca Benchmark',
+            f'Latency: **{elapsed:.2f} s** | {mem_str}'
+        )
+
+    def _query_model_memory(self) -> tuple:
+        """Return (llm_vram_gb, vlm_vram_gb) by querying each Ollama /api/ps endpoint."""
+        llm_cfg = self.system_config.get('llm', {})
+        vlm_cfg = self.system_config.get('vlm', {})
+
+        llm_mem = self._get_model_vram(
+            llm_cfg.get('ollama_url', 'http://localhost:11434'),
+            llm_cfg.get('model', '')
+        )
+        vlm_mem = self._get_model_vram(
+            vlm_cfg.get('ollama_url', 'http://localhost:11434'),
+            vlm_cfg.get('model', '')
+        )
+        return llm_mem, vlm_mem
+
+    def _get_model_vram(self, ollama_url: str, model_name: str) -> float:
+        """Return VRAM used by *model_name* in GB, via Ollama /api/ps. Returns 0 on failure."""
+        try:
+            resp = requests.get(f'{ollama_url}/api/ps', timeout=5)
+            if resp.status_code == 200:
+                prefix = model_name.split(':')[0].lower()
+                for m in resp.json().get('models', []):
+                    if m.get('name', '').lower().startswith(prefix):
+                        return m.get('size_vram', 0) / (1024 ** 3)
+        except Exception as exc:
+            self.get_logger().debug(f'VRAM query failed for {model_name}: {exc}')
+        return 0.0
+
+    # ------------------------------------------------------------------
 
     def _send_log_message(self, agent_name: str, message: str):
         """Send a log message to the chat."""
