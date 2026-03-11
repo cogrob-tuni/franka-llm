@@ -69,7 +69,7 @@ class ArucoCoordinateTransformer:
         self._load_calibration()
         
         self.node.get_logger().info(
-            f'✅ ArUco Coordinate Transformer initialized'
+            f'ArUco Coordinate Transformer initialized'
         )
         self.node.get_logger().info(
             f'   Calibration dir: {calibration_dir}'
@@ -227,7 +227,7 @@ class ArucoCoordinateTransformer:
         
         if point_robot is not None:
             self.node.get_logger().info(
-                f'✅ Pixel ({pixel_u}, {pixel_v}) @ {depth_m:.3f}m → '
+                f'Pixel ({pixel_u}, {pixel_v}) @ {depth_m:.3f}m -> '
                 f'Robot frame: X={point_robot[0]:.3f}m, Y={point_robot[1]:.3f}m, Z={point_robot[2]:.3f}m'
             )
         

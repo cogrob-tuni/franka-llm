@@ -25,125 +25,210 @@ def encode_image_to_base64(image: np.ndarray) -> str:
     return base64.b64encode(buffer).decode('utf-8')
 
 
-def draw_center_marker(image: np.ndarray, center: list, object_name: str = None, 
-                      depth: float = None, color=(0, 255, 255), size=50, thickness=4) -> np.ndarray:
+def draw_center_marker(image: np.ndarray, center: list, object_name: str = None,
+                       depth: float = None, color=(0, 255, 255), size=50,
+                       thickness=4) -> np.ndarray:
     """
-    Draw a HIGHLY VISIBLE crosshair marker at the center point
-    
-    Args:
-        image: OpenCV image
-        center: [x, y] pixel coordinates
-        object_name: Optional name of the detected object
-        depth: Optional depth value at center in meters
-        color: BGR color tuple (default: bright cyan/yellow)
-        size: Size of the crosshair in pixels
-        thickness: Line thickness
-        
-    Returns:
-        Image with marker drawn
+    Draw a crosshair marker at the detected center point.
+    Kept simple — detailed annotations are added by annotate_debug_image.
     """
     img_marked = image.copy()
     x, y = int(center[0]), int(center[1])
-    
-    # Use bright cyan for maximum visibility
-    main_color = (0, 255, 255)  # Cyan - visible on most backgrounds
-    outline_color = (255, 0, 255)  # Magenta outline for extra contrast
-    
-    # Draw thick magenta outline first
-    outline_size = size + 5
-    cv2.line(img_marked, (x - outline_size, y), (x + outline_size, y), outline_color, thickness + 4)
-    cv2.line(img_marked, (x, y - outline_size), (x, y + outline_size), outline_color, thickness + 4)
-    cv2.circle(img_marked, (x, y), size, outline_color, thickness + 4)
-    
-    # Draw main cyan crosshair on top
-    cv2.line(img_marked, (x - size, y), (x + size, y), main_color, thickness)
-    cv2.line(img_marked, (x, y - size), (x, y + size), main_color, thickness)
-    
-    # Draw circles - outer ring and filled center
-    cv2.circle(img_marked, (x, y), size // 2, main_color, thickness)
-    cv2.circle(img_marked, (x, y), 8, (0, 0, 255), -1)  # Red filled center dot
-    cv2.circle(img_marked, (x, y), 8, (255, 255, 255), 2)  # White outline on center dot
-    
-    # Add info text with high-contrast background
-    info_lines = [f'Pixel: ({x}, {y})']
-    if object_name:
-        info_lines.insert(0, f'Object: {object_name}')
-    if depth is not None:
-        info_lines.append(f'Depth: {depth:.3f} m')
-    
-    # Draw text with thick background for maximum visibility
-    font = cv2.FONT_HERSHEY_DUPLEX
-    font_scale = 0.8
-    text_thickness = 2
-    y_offset = max(50, y - size - 15)  # Make sure text is visible
-    
-    for i, line in enumerate(info_lines):
-        text_y = y_offset + (i * 35)
-        # Get text size for background
-        (text_width, text_height), _ = cv2.getTextSize(line, font, font_scale, text_thickness)
-        # Draw thick black background with white border
-        bg_x1 = x + size + 15
-        bg_y1 = text_y - text_height - 8
-        bg_x2 = bg_x1 + text_width + 16
-        bg_y2 = text_y + 8
-        # White border
-        cv2.rectangle(img_marked, (bg_x1 - 3, bg_y1 - 3), (bg_x2 + 3, bg_y2 + 3), (255, 255, 255), -1)
-        # Black background
-        cv2.rectangle(img_marked, (bg_x1, bg_y1), (bg_x2, bg_y2), (0, 0, 0), -1)
-        # Cyan text
-        cv2.putText(img_marked, line, (bg_x1 + 8, text_y), font, font_scale, main_color, text_thickness)
-    
+
+    CYAN    = (0, 255, 255)
+    MAGENTA = (255, 0, 255)
+    RED     = (0, 0, 255)
+    WHITE   = (255, 255, 255)
+
+    arm = size + 5
+    # Magenta outline
+    cv2.line(img_marked, (x - arm, y), (x + arm, y), MAGENTA, thickness + 4)
+    cv2.line(img_marked, (x, y - arm), (x, y + arm), MAGENTA, thickness + 4)
+    cv2.circle(img_marked, (x, y), size, MAGENTA, thickness + 4)
+    # Cyan crosshair
+    cv2.line(img_marked, (x - size, y), (x + size, y), CYAN, thickness)
+    cv2.line(img_marked, (x, y - size), (x, y + size), CYAN, thickness)
+    cv2.circle(img_marked, (x, y), size // 2, CYAN, thickness)
+    # Center dot
+    cv2.circle(img_marked, (x, y), 8, RED, -1)
+    cv2.circle(img_marked, (x, y), 8, WHITE, 2)
+
     return img_marked
 
 
-def save_debug_image(image: np.ndarray, object_name: str, center: list = None, 
-                     depth: float = None, debug_dir: Path = None, model_name: str = None) -> str:
+def annotate_debug_image(image: np.ndarray,
+                         action: str,
+                         object_name: str,
+                         user_prompt: str = None,
+                         center: list = None,
+                         depth: float = None,
+                         position_3d: list = None,
+                         confidence: str = None,
+                         llm_model: str = None,
+                         vlm_model: str = None,
+                         reasoning: str = None) -> np.ndarray:
     """
-    Save image with optional marker to debug directory
-    
-    Args:
-        image: OpenCV image
-        object_name: Name of the object (used in filename)
-        center: Optional [x, y] coordinates to mark
-        depth: Optional depth value at center in meters
-        debug_dir: Directory to save images (default: workspace_root/debug_images)
-        model_name: Optional model name to include in filename
-        
-    Returns:
-        Path to saved image
+    Add a clean, static information panel to the bottom of the image.
+    Suitable for IEEE paper figures.
+
+    Panel layout (dark background strip):
+      Row 1:  Action | Target object | Confidence
+      Row 2:  Pixel: (x, y)  |  Depth: z m  |  Robot: X / Y / Z
+      Row 3:  Prompt: "..."
+      Row 4:  LLM Reasoning: "..."
+      Row 5:  LLM: <model>  |  VLM: <model>
     """
-    # Determine save directory
+    img = image.copy()
+    h, w = img.shape[:2]
+
+    # ---- colours & fonts ----------------------------------------
+    BLACK      = (0,   0,   0)
+    WHITE      = (255, 255, 255)
+    CYAN       = (0,   255, 255)
+    YELLOW     = (0,   255, 255)  # same as cyan in BGR for consistency
+    LIGHT_GREY = (200, 200, 200)
+    GREEN      = (80,  220, 80)
+    ORANGE     = (0,   165, 255)
+
+    FONT       = cv2.FONT_HERSHEY_SIMPLEX
+    FONT_SM    = 0.52
+    FONT_MD    = 0.60
+    THICK_SM   = 1
+    THICK_MD   = 2
+    LINE_H     = 28   # pixels between rows
+    PAD        = 10
+
+    # ---- helper: truncate text to fit inside image width --------
+    def fit(text, scale=FONT_SM, thick=THICK_SM, margin=PAD * 2):
+        max_px = w - margin
+        while len(text) > 4:
+            (tw, _), _ = cv2.getTextSize(text, FONT, scale, thick)
+            if tw <= max_px:
+                break
+            text = text[:-4] + '...'
+        return text
+
+    # ---- build text rows ----------------------------------------
+    # Row 1
+    action_str  = action.upper() if action else 'DETECT'
+    conf_str    = f'Confidence: {confidence}' if confidence else ''
+    row1_left   = f'{action_str}  ->  {object_name}'
+    row1_right  = conf_str
+
+    # Row 2
+    px_str  = f'Pixel: ({int(center[0])}, {int(center[1])})' if center else ''
+    dep_str = f'Depth: {depth:.3f} m' if depth is not None else ''
+    if position_3d and len(position_3d) == 3:
+        rob_str = (f'Robot (fr3_link0):  '
+                   f'X {position_3d[0]:+.3f} m  '
+                   f'Y {position_3d[1]:+.3f} m  '
+                   f'Z {position_3d[2]:+.3f} m')
+    else:
+        rob_str = ''
+    row2 = '    '.join(filter(None, [px_str, dep_str, rob_str]))
+
+    # Row 3 - full original user prompt (fit to width)
+    row3 = fit(f'Prompt: "{user_prompt}"') if user_prompt else ''
+
+    # Row 4 - LLM routing reasoning (fit to width)
+    row4 = fit(f'LLM Reasoning: "{reasoning}"') if reasoning else ''
+
+    # Row 5 - model names
+    llm_str  = f'LLM: {llm_model}' if llm_model else ''
+    vlm_str  = f'VLM: {vlm_model}' if vlm_model else ''
+    row5 = '    |    '.join(filter(None, [llm_str, vlm_str]))
+
+    rows = [r for r in [row1_left, row2, row3, row4, row5] if r]
+    n_rows = len(rows)
+    panel_h = n_rows * LINE_H + 2 * PAD
+
+    # ---- draw dark panel ----------------------------------------
+    panel = np.zeros((panel_h, w, 3), dtype=np.uint8)
+    panel[:] = (30, 30, 30)  # very dark grey
+    # thin white top border
+    cv2.line(panel, (0, 0), (w, 0), WHITE, 1)
+
+    # ---- write rows into panel ----------------------------------
+    def put(panel_img, text, row_idx, color, scale=FONT_SM, thick=THICK_SM):
+        ty = PAD + row_idx * LINE_H + LINE_H - 6
+        cv2.putText(panel_img, text, (PAD, ty), FONT, scale, color, thick,
+                    cv2.LINE_AA)
+
+    if rows:
+        put(panel, row1_left,  0, CYAN,       FONT_MD, THICK_MD)
+    if row1_right and rows:
+        # right-align confidence
+        (tw, _), _ = cv2.getTextSize(row1_right, FONT, FONT_SM, THICK_SM)
+        cv2.putText(panel, row1_right, (w - tw - PAD, PAD + LINE_H - 6),
+                    FONT, FONT_SM, GREEN, THICK_SM, cv2.LINE_AA)
+
+    offset = 1
+    if row2:
+        put(panel, row2, offset, LIGHT_GREY); offset += 1
+    if row3:
+        put(panel, row3, offset, ORANGE);     offset += 1
+    if row4:
+        put(panel, row4, offset, CYAN);       offset += 1
+    if row5:
+        put(panel, row5, offset, LIGHT_GREY)
+
+    # ---- stack panel below image --------------------------------
+    return np.vstack([img, panel])
+
+
+def save_debug_image(image: np.ndarray, object_name: str, center: list = None,
+                     depth: float = None, debug_dir: Path = None,
+                     model_name: str = None, llm_model: str = None,
+                     action: str = None, user_prompt: str = None,
+                     position_3d: list = None, confidence: str = None,
+                     reasoning: str = None) -> str:
+    """
+    Save annotated debug image with a clean IEEE-quality info panel.
+
+    Filename format:
+      {action}_{object}_{llm_model}_{vlm_model}_{timestamp}.jpg
+    """
     if debug_dir is None:
-        # Default to workspace root / debug_images
         current_file = Path(__file__).resolve()
         workspace_root = current_file.parents[4]
         debug_dir = workspace_root / 'debug_images'
-    
     debug_dir.mkdir(exist_ok=True, parents=True)
-    
-    # Create annotated image
+
+    # Draw crosshair on a copy
     if center is not None:
-        img_to_save = draw_center_marker(image, center, object_name=object_name, depth=depth)
+        img_annotated = draw_center_marker(image, center, object_name=object_name, depth=depth)
     else:
-        img_to_save = image.copy()
-    
-    # Generate filename with timestamp and model name
-    timestamp = datetime.now().strftime('%b%d_%H-%M-%S')  # e.g., Feb17_18-30-45
-    safe_object_name = object_name.replace(' ', '_')
-    
-    if model_name:
-        # Keep full model name including size (e.g., llama3.2-vision:90b)
-        # Replace : with - for filesystem compatibility
-        model_safe = model_name.replace(':', '-')
-        filename = f'{safe_object_name}_{model_safe}_{timestamp}.jpg'
+        img_annotated = image.copy()
+
+    # Add static info panel
+    img_annotated = annotate_debug_image(
+        img_annotated,
+        action=action or 'detect',
+        object_name=object_name,
+        user_prompt=user_prompt,
+        center=center,
+        depth=depth,
+        position_3d=position_3d,
+        confidence=confidence,
+        llm_model=llm_model,
+        vlm_model=model_name,
+        reasoning=reasoning
+    )
+
+    # Build filename
+    timestamp_fn = datetime.now().strftime('%b%d_%H-%M-%S')
+    safe_object = object_name.replace(' ', '_')[:40]
+    action_prefix = (action or 'detect').lower()
+    vlm_safe = model_name.replace(':', '-') if model_name else 'vlm'
+    llm_safe = llm_model.replace(':', '-') if llm_model else None
+
+    if llm_safe:
+        filename = f'{action_prefix}_{safe_object}_{llm_safe}_{vlm_safe}_{timestamp_fn}.jpg'
     else:
-        filename = f'{safe_object_name}_{timestamp}.jpg'
-    
+        filename = f'{action_prefix}_{safe_object}_{vlm_safe}_{timestamp_fn}.jpg'
+
     filepath = debug_dir / filename
-    
-    # Save image
-    cv2.imwrite(str(filepath), img_to_save)
-    
+    cv2.imwrite(str(filepath), img_annotated)
     return str(filepath)
 
 

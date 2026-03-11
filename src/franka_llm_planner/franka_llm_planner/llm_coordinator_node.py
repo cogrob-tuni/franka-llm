@@ -97,6 +97,8 @@ class LLMCoordinator(Node):
         # Status tracking
         self.vlm_active = False
         self.motion_active = False
+        # Ollama inference time for the last LLM call (nanoseconds → ms)
+        self._last_llm_eval_ms: float = 0.0
         
         # Status publishing timer (every 1 second)
         self.status_timer = self.create_timer(1.0, self.publish_status)
@@ -252,7 +254,12 @@ Examples:
             )
             
             if response.status_code == 200:
-                llm_response = response.json().get('response', '{}')
+                raw = response.json()
+                llm_response = raw.get('response', '{}')
+                # total_duration = load_duration + prompt_eval_duration + eval_duration
+                # This is Ollama's own wall-clock from receiving the request to sending
+                # the response, and is the most accurate per-request inference metric.
+                self._last_llm_eval_ms = raw.get('total_duration', 0) / 1e6
                 try:
                     return json.loads(llm_response)
                 except json.JSONDecodeError:
@@ -300,9 +307,10 @@ Examples:
         intent = decision.get('intent', 'unknown')
         reasoning = decision.get('reasoning', '')
         
-        # Log LLM decision details
-        self._publish_log(f'💭 LLM ({self.model})', 
-                         f'Decision: **{intent}** → Routing to **{target_agent}**')
+        # Log LLM decision details — include inference time so web_handler can store it
+        self._publish_log(f'\U0001f4ad LLM ({self.model})', 
+                         f'Decision: **{intent}** → Routing to **{target_agent}**',
+                         extra={'llm_infer_ms': self._last_llm_eval_ms})
         if reasoning:
             self._publish_log(f'LLM Reasoning', reasoning)
         
@@ -394,6 +402,10 @@ Examples:
         else:
             self._publish_log('Vision Agent', 'Analyzing scene...')
         
+        # Attach original user input and LLM reasoning for debug image annotation
+        vlm_request['user_input'] = self.current_request
+        vlm_request['reasoning'] = decision.get('reasoning', '')
+
         msg = String()
         msg.data = json.dumps(vlm_request)
         self.vlm_request_pub.publish(msg)
@@ -478,8 +490,8 @@ Examples:
         self.response_pub.publish(msg)
         self.get_logger().info(f'Response: {message}')
     
-    def _publish_log(self, agent_name: str, message: str):
-        """Publish log message for web display."""
+    def _publish_log(self, agent_name: str, message: str, extra: dict = None):
+        """Publish log message for web display. Pass extra={} to attach metrics."""
         log_msg = {
             'type': 'log',
             'sender': 'system',
@@ -487,6 +499,8 @@ Examples:
             'message': message,
             'timestamp': datetime.now().isoformat()
         }
+        if extra:
+            log_msg.update(extra)
         # Publish as coordinator response with special formatting
         msg = String()
         msg.data = f'[LOG]{json.dumps(log_msg)}'

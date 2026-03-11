@@ -60,7 +60,7 @@ class ArmCameraRecorder(Node):
                 10
             )
         
-        self.get_logger().info(f'✅ Arm Camera Recorder initialized')
+        self.get_logger().info(f'Arm Camera Recorder initialized')
         self.get_logger().info(f'   Output directory: {self.output_dir}')
         self.get_logger().info(f'   Press "r" to start/stop recording')
         self.get_logger().info(f'   Press "q" to quit')
@@ -120,14 +120,14 @@ class ArmCameraRecorder(Node):
         
         self.recording = True
         self.frame_count = 0
-        self.get_logger().info(f'🔴 Recording started: {filename.name}')
+        self.get_logger().info(f'Recording started: {filename.name}')
     
     def stop_recording(self):
         """Stop video recording"""
         if self.video_writer is not None:
             self.video_writer.release()
             self.video_writer = None
-            self.get_logger().info(f'⏹️  Recording stopped - saved {self.frame_count} frames')
+            self.get_logger().info(f'Recording stopped - saved {self.frame_count} frames')
         
         self.recording = False
         self.frame_count = 0

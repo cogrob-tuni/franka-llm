@@ -103,6 +103,11 @@ class OllamaVLMClient:
         
         if result and 'response' in result:
             response_text = result['response']
+            # total_duration = load_duration + prompt_eval_duration + eval_duration
+            # For models split across CPU/GPU (like qwen2.5vl:32b at 137 GB),
+            # load_duration captures the layer-shuffling overhead and is the dominant
+            # cost — this is what accounts for the large gap vs eval_duration alone.
+            eval_duration_ns = result.get('total_duration', 0)
             self._log(f'Raw VLM response: {response_text}', 'info')
             
             import re
@@ -130,7 +135,8 @@ class OllamaVLMClient:
                     return {
                         'center': [x, y],
                         'description': response_text[:150],
-                        'confidence': 'high' if 'FOUND' in response_text.upper() else 'medium'
+                        'confidence': 'high' if 'FOUND' in response_text.upper() else 'medium',
+                        'eval_duration_ms': eval_duration_ns / 1e6
                     }
             
             # No coordinates found but object mentioned
@@ -138,7 +144,8 @@ class OllamaVLMClient:
                 return {
                     'center': None,
                     'description': response_text,
-                    'confidence': 'low'
+                    'confidence': 'low',
+                    'eval_duration_ms': eval_duration_ns / 1e6
                 }
             
             # Check if VLM explicitly said NOT FOUND
@@ -147,7 +154,8 @@ class OllamaVLMClient:
                     'center': None,
                     'description': response_text,
                     'confidence': 'none',
-                    'not_found': True
+                    'not_found': True,
+                    'eval_duration_ms': eval_duration_ns / 1e6
                 }
         
         return None
@@ -186,6 +194,7 @@ class OllamaVLMClient:
         
         if result and 'response' in result:
             response_text = result['response']
+            eval_duration_ns = result.get('total_duration', 0)
             self._log(f'Raw VLM response: {response_text}', 'info')
             
             import re
@@ -213,7 +222,8 @@ class OllamaVLMClient:
                     return {
                         'center': [x, y],
                         'description': response_text[:150],
-                        'confidence': 'high' if 'FOUND' in response_text.upper() else 'medium'
+                        'confidence': 'high' if 'FOUND' in response_text.upper() else 'medium',
+                        'eval_duration_ms': eval_duration_ns / 1e6
                     }
         
         return None

@@ -364,7 +364,7 @@ class FrankaCoordinator(Node):
             
             # Special handling for go_home and dance - skip VLM processing
             if grounding.get('skip_vlm', False) and action in ['go_home', 'dance']:
-                self.get_logger().info(f'🏠 Processing {action} command - skipping VLM, requesting confirmation')
+                self.get_logger().info(f'Processing {action} command - skipping VLM, requesting confirmation')
                 # Store action for confirmation flow
                 self.last_action = action
                 self.last_target_name = target
@@ -386,13 +386,13 @@ class FrankaCoordinator(Node):
             
             if not center or self.latest_depth_image is None or self.camera_intrinsics is None:
                 self.get_logger().warn(
-                    f'⚠️  Cannot resolve 3D position for "{target}": '
+                    f'Cannot resolve 3D position for "{target}": '
                     f'center={center is not None}, depth={self.latest_depth_image is not None}, '
                     f'intrinsics={self.camera_intrinsics is not None}'
                 )
                 return
             
-            self.get_logger().info(f'🎯 Processing VLM detection: {target}')
+            self.get_logger().info(f'Processing VLM detection: {target}')
             self.get_logger().info(f'   Center pixel: {center}')
             self.get_logger().info(f'   Action: {action}')
             
@@ -400,7 +400,7 @@ class FrankaCoordinator(Node):
             position_robot = self._convert_pixel_to_robot_frame(center, target)
             
             if position_robot is None:
-                self.get_logger().error(f'❌ Failed to compute 3D position for "{target}"')
+                self.get_logger().error(f'Failed to compute 3D position for "{target}"')
                 return
             
             # Apply offset based on placement type for place actions
@@ -432,7 +432,7 @@ class FrankaCoordinator(Node):
                     
                     position_robot = position_robot + offset
                     self.get_logger().info(
-                        f'   ⚡ OFFSET PLACEMENT: Applied 8cm offset in "{direction}" direction\n'
+                        f'   OFFSET PLACEMENT: Applied 8cm offset in "{direction}" direction\n'
                         f'   Final position: X={position_robot[0]:+.4f}m, Y={position_robot[1]:+.4f}m, Z={position_robot[2]:+.4f}m'
                     )
                     
@@ -444,14 +444,14 @@ class FrankaCoordinator(Node):
                     offset = np.array([0.0, 0.0, held_object_height + clearance])
                     position_robot = position_robot + offset
                     self.get_logger().info(
-                        f'   📚 STACKING: Target height Z={position_robot[2]-offset[2]:.3f}m + object height {held_object_height*1000:.0f}mm + clearance {clearance*1000:.0f}mm\n'
+                        f'   STACKING: Target height Z={position_robot[2]-offset[2]:.3f}m + object height {held_object_height*1000:.0f}mm + clearance {clearance*1000:.0f}mm\n'
                         f'   Final position: X={position_robot[0]:+.4f}m, Y={position_robot[1]:+.4f}m, Z={position_robot[2]:+.4f}m'
                     )
                     
                 else:  # placement_type == 'direct' or no type specified
                     # Direct placement: use exact detected position
                     self.get_logger().info(
-                        f'   🎯 DIRECT PLACEMENT: Using exact detected position\n'
+                        f'   DIRECT PLACEMENT: Using exact detected position\n'
                         f'   Final position: X={position_robot[0]:+.4f}m, Y={position_robot[1]:+.4f}m, Z={position_robot[2]:+.4f}m'
                     )
             
@@ -461,7 +461,7 @@ class FrankaCoordinator(Node):
                 handover_height = self.config['robot']['handover_height']
                 position_robot[2] = handover_height
                 self.get_logger().info(
-                    f'   🤝 HANDOVER: Using detected hand XY with fixed Z={handover_height}m\n'
+                    f'   HANDOVER: Using detected hand XY with fixed Z={handover_height}m\n'
                     f'   Final position: X={position_robot[0]:+.4f}m, Y={position_robot[1]:+.4f}m, Z={position_robot[2]:+.4f}m'
                 )
             
@@ -535,7 +535,7 @@ class FrankaCoordinator(Node):
         
         if position_robot is not None:
             self.get_logger().info(
-                f'✅ "{target_name}" located in ROBOT FRAME:\n'
+                f'"{target_name}" located in ROBOT FRAME:\n'
                 f'   X = {position_robot[0]:+.4f} m  ({"forward" if position_robot[0] > 0 else "backward"})\n'
                 f'   Y = {position_robot[1]:+.4f} m  ({"left" if position_robot[1] > 0 else "right"})\n'
                 f'   Z = {position_robot[2]:+.4f} m  (height from base)'
@@ -563,7 +563,7 @@ class FrankaCoordinator(Node):
         
         if position_robot is not None:
             self.get_logger().info(
-                f'✅ "{target_name}" located in ROBOT FRAME:\n'
+                f'"{target_name}" located in ROBOT FRAME:\n'
                 f'   X = {position_robot[0]:+.4f} m  ({"forward" if position_robot[0] > 0 else "backward"})\n'
                 f'   Y = {position_robot[1]:+.4f} m  ({"left" if position_robot[1] > 0 else "right"})\n'
                 f'   Z = {position_robot[2]:+.4f} m  (height from base)'
@@ -596,7 +596,7 @@ class FrankaCoordinator(Node):
         self.target_position_pub.publish(pose_msg)
         
         self.get_logger().info(
-            f'📤 Published target position for "{target_name}" (action: {action})'
+            f'Published target position for "{target_name}" (action: {action})'
         )
     
     def _send_motion_command(self, action: str, target_name: str):
@@ -619,7 +619,7 @@ class FrankaCoordinator(Node):
         self.motion_command_pub.publish(msg)
         
         self.get_logger().info(
-            f'📤 Sent motion command: {action} "{target_name}"'
+            f'Sent motion command: {action} "{target_name}"'
         )
     
     def resolve_3d_position(self, bbox, depth_image, camera_intrinsics):
@@ -645,7 +645,7 @@ class FrankaCoordinator(Node):
             
             if position_robot is not None:
                 self.get_logger().info(
-                    f'🤖 ROBOT BASE FRAME: X={position_robot[0]:.3f}m, Y={position_robot[1]:.3f}m, Z={position_robot[2]:.3f}m'
+                    f'ROBOT BASE FRAME: X={position_robot[0]:.3f}m, Y={position_robot[1]:.3f}m, Z={position_robot[2]:.3f}m'
                 )
             
             return position_robot
@@ -686,28 +686,28 @@ class FrankaCoordinator(Node):
                 target = motion.get('target', 'object')
                 action = motion.get('action', 'pick')
                 
-                self.get_logger().info(f'✓ User approved motion: {action} {target}')
+                self.get_logger().info(f'User approved motion: {action} {target}')
                 
                 # Republish target position to ensure motion executor has it
                 if self.last_target_position is not None:
                     self.get_logger().info(f'Position stored: {self.last_target_position}')
                     self._publish_target_position(self.last_target_position, target, action)
-                    self.get_logger().info('✓ Republished target position for motion executor')
+                    self.get_logger().info('Republished target position for motion executor')
                     
                     # Small delay to ensure position arrives before command
                     import time
                     time.sleep(0.1)
                 else:
-                    self.get_logger().error('✗ No stored position to republish!')
+                    self.get_logger().error('No stored position to republish!')
                 
                 # Send pick command
                 self._send_motion_command(action, target)
-                self.get_logger().info(f'✓ Sent motion command: {action}')
+                self.get_logger().info(f'Sent motion command: {action}')
                 # time.sleep(2.0)  # Wait for pick to complete
                 # self._send_motion_command('place', 'drop_zone')
                 
             else:
-                self.get_logger().info('✗ User cancelled motion')
+                self.get_logger().info('User cancelled motion')
                 
         except Exception as e:
             self.get_logger().error(f'Error handling user confirmation: {e}')
