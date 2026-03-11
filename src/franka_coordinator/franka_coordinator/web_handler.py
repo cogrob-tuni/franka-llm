@@ -364,6 +364,7 @@ class WebHandler(Node):
                     if info.get('type') == 'system_info' and info.get('component') == 'llm':
                         self.llm_model_name = info.get('model', 'LLM')
                         self.system_config['llm'] = info.get('config', {})
+                        self.system_config['llm']['model'] = self.llm_model_name
                         self.get_logger().info(f'Updated LLM model name: {self.llm_model_name}')
                         return  # Don't forward system info to web
                 except (json.JSONDecodeError, ValueError):
@@ -377,17 +378,20 @@ class WebHandler(Node):
                 # Capture LLM VRAM the instant the routing decision is published —
                 # this is *before* the VLM loads, so the LLM is still resident in VRAM.
                 agent_name = log_data.get('agent_name', '')
-                if '\U0001f4ad LLM' in agent_name or agent_name.startswith('\U0001f4ad LLM'):
+                if '💭 LLM' in agent_name:
                     llm_cfg = self.system_config.get('llm', {})
                     self._bench_llm_mem = self._get_model_vram(
                         llm_cfg.get('ollama_url', 'http://localhost:11434'),
-                        llm_cfg.get('model', '')
+                        self.llm_model_name  # use the stored name, not config['model']
                     )
                     self.get_logger().debug(
                         f'[BENCH] LLM mem snapshot: {self._bench_llm_mem:.2f} GB'
                     )
                     # Capture per-request inference time sent by llm_coordinator_node
                     self._bench_llm_infer_ms = log_data.get('llm_infer_ms', 0.0)
+                    self.get_logger().debug(
+                        f'[BENCH] LLM infer snapshot: {self._bench_llm_infer_ms:.0f} ms'
+                    )
 
                 self.web_response_pub.publish(
                     String(data=json.dumps(log_data))
