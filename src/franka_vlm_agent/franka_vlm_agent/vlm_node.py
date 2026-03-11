@@ -99,6 +99,9 @@ class VLMNode(Node):
         self.timeout = config['vlm']['timeout']
         self.temperature = config['vlm'].get('temperature', 0.3)
         
+        # LLM model name (for debug image filenames)
+        self.llm_model = config['llm']['model']
+        
         # Camera topics from config
         self.camera_topic = config['camera']['ee_camera_topic']
         self.depth_topic = config['camera']['depth_topic']
@@ -293,11 +296,15 @@ class VLMNode(Node):
             location_description = request_data.get('location', '')
             placement_type = request_data.get('placement_type', 'direct')
             direction = request_data.get('direction', None)
+            user_input = request_data.get('user_input', location_description)
+            reasoning = request_data.get('reasoning', '')
         else:
             # Fallback for string format
             location_description = str(request_data)
             placement_type = 'direct'
             direction = None
+            user_input = location_description
+            reasoning = ''
         
         self.get_logger().info(f'Grounding location: "{location_description}" (type: {placement_type}, direction: {direction})...')
         
@@ -311,6 +318,7 @@ class VLMNode(Node):
         result = self.vlm_client.ground_location(image_base64, location_description, img_width=w, img_height=h)
         
         if result:
+            vlm_infer_ms = result.get('eval_duration_ms', 0.0)
             # Parse and normalize response
             parsed = parse_vlm_response(json.dumps(result))
             
@@ -345,7 +353,13 @@ class VLMNode(Node):
                             center=center,
                             depth=depth_value,
                             debug_dir=self.debug_dir,
-                            model_name=self.vlm_model
+                            model_name=self.vlm_model,
+                            llm_model=self.llm_model,
+                            action='place',
+                            user_prompt=user_input,
+                            position_3d=position_3d['position'] if position_3d else None,
+                            confidence=confidence,
+                            reasoning=reasoning
                         )
                         self.get_logger().info(f'✓ Saved debug image: {Path(saved_path).name}')
                     except Exception as e:
@@ -362,7 +376,8 @@ class VLMNode(Node):
                         center, 
                         'place',
                         placement_type=placement_type,
-                        direction=direction
+                        direction=direction,
+                        vlm_infer_ms=vlm_infer_ms
                     )
             else:
                 self.get_logger().warn(f'✗ Could not ground location "{location_description}"')
@@ -382,10 +397,14 @@ class VLMNode(Node):
         if isinstance(request_data, dict):
             target_object = request_data.get('object', '')
             action = request_data.get('action', 'pick')  # Default to pick if not specified
+            user_input = request_data.get('user_input', target_object)
+            reasoning = request_data.get('reasoning', '')
         else:
             # Fallback for string format
             target_object = str(request_data)
             action = 'pick'
+            user_input = target_object
+            reasoning = ''
         
         self.get_logger().info(f'Locating "{target_object}" for action: {action}...')
         
@@ -399,6 +418,8 @@ class VLMNode(Node):
         result = self.vlm_client.locate_object(image_base64, target_object, img_width=w, img_height=h)
         
         if result:
+            # Extract inference time BEFORE parse_vlm_response (which may drop extra keys)
+            vlm_infer_ms = result.get('eval_duration_ms', 0.0)
             # Parse and normalize response
             parsed = parse_vlm_response(json.dumps(result))
             
@@ -432,7 +453,13 @@ class VLMNode(Node):
                             center=center,
                             depth=depth_value,
                             debug_dir=self.debug_dir,
-                            model_name=self.vlm_model
+                            model_name=self.vlm_model,
+                            llm_model=self.llm_model,
+                            action=action,
+                            user_prompt=user_input,
+                            position_3d=position_3d['position'] if position_3d else None,
+                            confidence=confidence,
+                            reasoning=reasoning
                         )
                         self.get_logger().info(f'✓ Saved debug image: {Path(saved_path).name}')
                     except Exception as e:
@@ -444,7 +471,7 @@ class VLMNode(Node):
                 if position_3d:
                     self._publish_position(position_3d)
                     # NEW: Publish grounding with bbox for coordinator
-                    self._publish_grounding(target_object, center, action)
+                    self._publish_grounding(target_object, center, action, vlm_infer_ms=vlm_infer_ms)
             else:
                 self.get_logger().warn(f'✗ Could not locate "{target_object}"')
                 # Special message for hand detection failure during handover
@@ -487,7 +514,10 @@ class VLMNode(Node):
                         self.latest_image,
                         'scene_description',
                         debug_dir=self.debug_dir,
-                        model_name=self.vlm_model
+                        model_name=self.vlm_model,
+                        llm_model=self.llm_model,
+                        action='inspect',
+                        user_prompt='scene description'
                     )
                     self.get_logger().info(f'✓ Saved debug image: {Path(saved_path).name}')
                 except Exception as e:
@@ -516,7 +546,8 @@ class VLMNode(Node):
         self.position_pub.publish(pose_msg)
     
     def _publish_grounding(self, target_name: str, center: list, action: str, 
-                          placement_type: str = 'direct', direction: str = None):
+                          placement_type: str = 'direct', direction: str = None,
+                          vlm_infer_ms: float = 0.0):
         """Publish grounding info with bbox around center pixel for coordinator"""
         # Create a small bbox around the center (±20 pixels)
         bbox_size = 40
@@ -530,7 +561,8 @@ class VLMNode(Node):
             "bbox": [x1, y1, x2, y2],
             "center": center,
             "action": action,
-            "placement_type": placement_type
+            "placement_type": placement_type,
+            "vlm_infer_ms": vlm_infer_ms
         }
         
         # Add direction if specified

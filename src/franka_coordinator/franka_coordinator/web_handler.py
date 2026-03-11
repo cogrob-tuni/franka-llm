@@ -80,6 +80,15 @@ class WebHandler(Node):
 
         # Benchmark: wall-clock start time of the current perception-and-planning cycle
         self._bench_t_start: float = 0.0
+        # Memory snapshots sampled at the moment each model finishes its work.
+        # Capturing here (rather than at _bench_finish) prevents the problem where
+        # loading the large VLM model evicts the LLM from VRAM before we read it.
+        self._bench_llm_mem: float = 0.0
+        self._bench_vlm_mem: float = 0.0
+        # Per-request inference times from Ollama eval_duration — these actually vary!
+        # Memory above is a fixed model property; inference time reflects prompt/complexity.
+        self._bench_llm_infer_ms: float = 0.0
+        self._bench_vlm_infer_ms: float = 0.0
         self.vlm_model_name = 'VLM'  # Default, updated from system info
         self.llm_model_name = 'LLM'  # Default, updated from system info
         
@@ -364,6 +373,22 @@ class WebHandler(Node):
             if response_text.startswith('[LOG]'):
                 # Extract and forward log message
                 log_data = json.loads(response_text[5:])
+
+                # Capture LLM VRAM the instant the routing decision is published —
+                # this is *before* the VLM loads, so the LLM is still resident in VRAM.
+                agent_name = log_data.get('agent_name', '')
+                if '\U0001f4ad LLM' in agent_name or agent_name.startswith('\U0001f4ad LLM'):
+                    llm_cfg = self.system_config.get('llm', {})
+                    self._bench_llm_mem = self._get_model_vram(
+                        llm_cfg.get('ollama_url', 'http://localhost:11434'),
+                        llm_cfg.get('model', '')
+                    )
+                    self.get_logger().debug(
+                        f'[BENCH] LLM mem snapshot: {self._bench_llm_mem:.2f} GB'
+                    )
+                    # Capture per-request inference time sent by llm_coordinator_node
+                    self._bench_llm_infer_ms = log_data.get('llm_infer_ms', 0.0)
+
                 self.web_response_pub.publish(
                     String(data=json.dumps(log_data))
                 )
@@ -485,7 +510,21 @@ class WebHandler(Node):
             action = grounding_data.get('action', 'pick')
             bbox = grounding_data.get('bbox', [])
             center = grounding_data.get('center', [])
-            
+
+            # Capture VLM VRAM immediately after VLM finishes its analysis.
+            # For skip_vlm actions (go_home, dance) the VLM was never invoked so
+            # this will correctly return 0 (or the residual from a prior call).
+            vlm_cfg = self.system_config.get('vlm', {})
+            self._bench_vlm_mem = self._get_model_vram(
+                vlm_cfg.get('ollama_url', 'http://localhost:11434'),
+                vlm_cfg.get('model', '')
+            )
+            self.get_logger().debug(
+                f'[BENCH] VLM mem snapshot: {self._bench_vlm_mem:.2f} GB'
+            )
+            # Capture per-request VLM inference time from grounding message
+            self._bench_vlm_infer_ms = grounding_data.get('vlm_infer_ms', 0.0)
+
             self.get_logger().info(f'VLM grounding: {target} at {center}')
             
             # Store for motion confirmation
@@ -644,30 +683,39 @@ class WebHandler(Node):
     def _bench_start(self):
         """Record the wall-clock start of a perception-and-planning cycle."""
         self._bench_t_start = time.monotonic()
+        self._bench_llm_mem = 0.0
+        self._bench_vlm_mem = 0.0
+        self._bench_llm_infer_ms = 0.0
+        self._bench_vlm_infer_ms = 0.0
 
     def _bench_finish(self, action: str, target: str):
-        """Compute latency, query model VRAM, log and send results to web."""
+        """Compute latency, report per-request inference times and fixed VRAM footprints."""
         elapsed = time.monotonic() - self._bench_t_start
-        llm_mem, vlm_mem = self._query_model_memory()
 
-        # Always log to ROS console for offline collection
+        llm_mem = self._bench_llm_mem
+        vlm_mem = self._bench_vlm_mem
+        # Convert ms → s for display; these vary per request (reflect prompt/image complexity)
+        llm_infer_s = self._bench_llm_infer_ms / 1000.0
+        vlm_infer_s = self._bench_vlm_infer_ms / 1000.0
+
+        # Full structured log for paper data collection — grep [BENCHMARK] in ROS logs
         self.get_logger().info(
             f'[BENCHMARK] action={action} target={target} '
             f'latency={elapsed:.2f}s '
+            f'llm_infer={llm_infer_s:.2f}s vlm_infer={vlm_infer_s:.2f}s '
             f'llm_mem={llm_mem:.2f}GB vlm_mem={vlm_mem:.2f}GB'
         )
 
-        # Also surface results in the web chat
-        mem_parts = []
-        if llm_mem > 0:
-            mem_parts.append(f'LLM mem: **{llm_mem:.2f} GB**')
-        if vlm_mem > 0:
-            mem_parts.append(f'VLM mem: **{vlm_mem:.2f} GB**')
-        mem_str = ' | '.join(mem_parts) if mem_parts else 'mem: unavailable'
+        # Web display — inference times vary per request; VRAM is a fixed system spec
+        llm_infer_str = f'**{llm_infer_s:.2f} s**' if llm_infer_s > 0 else '**N/A**'
+        vlm_infer_str = f'**{vlm_infer_s:.2f} s**' if vlm_infer_s > 0 else '**N/A**'
+        llm_mem_str = f'{llm_mem:.2f} GB' if llm_mem > 0 else 'N/A'
+        vlm_mem_str = f'{vlm_mem:.2f} GB' if vlm_mem > 0 else 'N/A'
 
         self._send_log_message(
             '\U0001f4ca Benchmark',
-            f'Latency: **{elapsed:.2f} s** | {mem_str}'
+            f'Latency: **{elapsed:.2f} s** | LLM infer: {llm_infer_str} | VLM infer: {vlm_infer_str}\n'
+            f'RAM \u2192 LLM: {llm_mem_str} | VLM: {vlm_mem_str}'
         )
 
     def _query_model_memory(self) -> tuple:
@@ -686,16 +734,22 @@ class WebHandler(Node):
         return llm_mem, vlm_mem
 
     def _get_model_vram(self, ollama_url: str, model_name: str) -> float:
-        """Return VRAM used by *model_name* in GB, via Ollama /api/ps. Returns 0 on failure."""
+        """Return total memory used by *model_name* in GB, via Ollama /api/ps.
+
+        Uses 'size' (CPU+GPU combined) rather than 'size_vram' (GPU-only).
+        size_vram fluctuates when Ollama dynamically shifts layers between CPU and GPU
+        for models too large to fit entirely on GPU.  The total 'size' is stable.
+        Returns 0 on failure.
+        """
         try:
             resp = requests.get(f'{ollama_url}/api/ps', timeout=5)
             if resp.status_code == 200:
                 prefix = model_name.split(':')[0].lower()
                 for m in resp.json().get('models', []):
                     if m.get('name', '').lower().startswith(prefix):
-                        return m.get('size_vram', 0) / (1024 ** 3)
+                        return m.get('size', 0) / (1024 ** 3)
         except Exception as exc:
-            self.get_logger().debug(f'VRAM query failed for {model_name}: {exc}')
+            self.get_logger().debug(f'Memory query failed for {model_name}: {exc}')
         return 0.0
 
     # ------------------------------------------------------------------
