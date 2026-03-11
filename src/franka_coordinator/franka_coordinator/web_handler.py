@@ -395,9 +395,9 @@ class WebHandler(Node):
                 return
             
             # Detect which agent based on prefix
-            agent_name = f'🧠 LLM Coordinator ({self.llm_model_name})'
+            agent_name = f'LLM Coordinator ({self.llm_model_name})'
             if response_text.startswith('[VLM]'):
-                agent_name = f'🔍 Vision Agent ({self.vlm_model_name})'
+                agent_name = f'Vision Agent ({self.vlm_model_name})'
                 response_text = response_text[5:].strip()
             elif response_text.startswith('[Motion]'):
                 agent_name = '⚙️ Motion Controller'
@@ -564,7 +564,7 @@ class WebHandler(Node):
                 confirmation_message = {
                     'type': 'confirmation_request',
                     'sender': 'system',
-                    'agent_name': '🏠 Home Position',
+                    'agent_name': 'Home Position',
                     'message': (
                         f'Ready to execute: **Return to Home Position**\n\n'
                         f'📋 Action plan:\n'
@@ -580,7 +580,7 @@ class WebHandler(Node):
                 confirmation_message = {
                     'type': 'confirmation_request',
                     'sender': 'system',
-                    'agent_name': '💃 Dance Sequence',
+                    'agent_name': 'Dance Sequence',
                     'message': (
                         f'Ready to execute: **Dance Performance**\n\n'
                         f'📋 Action plan:\n'
@@ -966,11 +966,11 @@ class WebHandler(Node):
                     self.status_cache['last_action'] = f'Completed at {datetime.now().strftime("%H:%M:%S")}'
 
             if status_text == 'completed':
-                message = '✓ Motion sequence completed successfully'
+                message = 'Motion sequence completed successfully'
                 msg_type = 'message'
                 self.pending_motion = None
             elif status_text == 'failed':
-                message = f'✗ Motion failed: {status.get("error", "Unknown error")}'
+                message = f'Motion failed: {status.get("error", "Unknown error")}'
                 msg_type = 'message'
                 self.pending_motion = None
             elif status_text == 'executing':

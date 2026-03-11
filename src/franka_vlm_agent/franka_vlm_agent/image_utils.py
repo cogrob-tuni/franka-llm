@@ -98,11 +98,21 @@ def annotate_debug_image(image: np.ndarray,
     LINE_H     = 28   # pixels between rows
     PAD        = 10
 
+    # ---- helper: truncate text to fit inside image width --------
+    def fit(text, scale=FONT_SM, thick=THICK_SM, margin=PAD * 2):
+        max_px = w - margin
+        while len(text) > 4:
+            (tw, _), _ = cv2.getTextSize(text, FONT, scale, thick)
+            if tw <= max_px:
+                break
+            text = text[:-4] + '...'
+        return text
+
     # ---- build text rows ----------------------------------------
     # Row 1
     action_str  = action.upper() if action else 'DETECT'
     conf_str    = f'Confidence: {confidence}' if confidence else ''
-    row1_left   = f'{action_str}  →  {object_name}'
+    row1_left   = f'{action_str}  ->  {object_name}'
     row1_right  = conf_str
 
     # Row 2
@@ -117,17 +127,18 @@ def annotate_debug_image(image: np.ndarray,
         rob_str = ''
     row2 = '    '.join(filter(None, [px_str, dep_str, rob_str]))
 
-    # Row 3
-    prompt_display = user_prompt[:120] + '…' if user_prompt and len(user_prompt) > 120 else (user_prompt or '')
-    row3 = f'Prompt: "{prompt_display}"' if prompt_display else ''
+    # Row 3 - full original user prompt (fit to width)
+    row3 = fit(f'Prompt: "{user_prompt}"') if user_prompt else ''
 
-    # Row 4
+    # Row 4 - LLM routing reasoning (fit to width)
+    row4 = fit(f'LLM Reasoning: "{reasoning}"') if reasoning else ''
+
+    # Row 5 - model names
     llm_str  = f'LLM: {llm_model}' if llm_model else ''
     vlm_str  = f'VLM: {vlm_model}' if vlm_model else ''
-    row4_parts = list(filter(None, [llm_str, vlm_str]))
-    row4 = '    |    '.join(row4_parts)
+    row5 = '    |    '.join(filter(None, [llm_str, vlm_str]))
 
-    rows = [r for r in [row1_left, row2, row3, row4] if r]
+    rows = [r for r in [row1_left, row2, row3, row4, row5] if r]
     n_rows = len(rows)
     panel_h = n_rows * LINE_H + 2 * PAD
 

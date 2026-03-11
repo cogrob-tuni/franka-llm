@@ -65,9 +65,9 @@ class VLMNode(Node):
         # Check VLM health
         healthy, msg = self.vlm_client.check_health()
         if healthy:
-            self.get_logger().info(f'✓ {msg}')
+            self.get_logger().info(f'{msg}')
         else:
-            self.get_logger().warn(f'⚠ {msg}')
+            self.get_logger().warn(f'{msg}')
         
         # Publish system info log
         self._publish_system_info()
@@ -328,7 +328,7 @@ class VLMNode(Node):
                 description = parsed.get('description', '')
                 
                 self.get_logger().info(
-                    f'✓ Located "{location_description}" at pixel {center}\n'
+                    f'Located "{location_description}" at pixel {center}\n'
                     f'  Confidence: {confidence}\n'
                     f'  Description: {description}'
                 )
@@ -361,7 +361,7 @@ class VLMNode(Node):
                             confidence=confidence,
                             reasoning=reasoning
                         )
-                        self.get_logger().info(f'✓ Saved debug image: {Path(saved_path).name}')
+                        self.get_logger().info(f'Saved debug image: {Path(saved_path).name}')
                     except Exception as e:
                         self.get_logger().error(f'Failed to save debug image: {e}')
 
@@ -380,15 +380,15 @@ class VLMNode(Node):
                         vlm_infer_ms=vlm_infer_ms
                     )
             else:
-                self.get_logger().warn(f'✗ Could not ground location "{location_description}"')
+                self.get_logger().warn(f'Could not ground location "{location_description}"')
                 self._publish_explanation(f'Location "{location_description}" not found')
         else:
             # Check if this was a "not found" response vs actual VLM failure
             if result and result.get('not_found'):
-                self.get_logger().warn(f'✗ VLM could not find location "{location_description}"')
+                self.get_logger().warn(f'VLM could not find location "{location_description}"')
                 self._publish_explanation(f'I cannot find "{location_description}" in the camera view.')
             else:
-                self.get_logger().error(f'✗ Failed to get response from VLM')
+                self.get_logger().error(f'Failed to get response from VLM')
                 self._publish_explanation('Vision system is not responding. Please try again.')
     
     def _handle_locate_request(self, request_data):
@@ -429,7 +429,7 @@ class VLMNode(Node):
                 description = parsed.get('description', '')
                 
                 self.get_logger().info(
-                    f'✓ Located "{target_object}" at pixel {center}\n'
+                    f'Located "{target_object}" at pixel {center}\n'
                     f'  Confidence: {confidence}\n'
                     f'  Description: {description}'
                 )
@@ -461,7 +461,7 @@ class VLMNode(Node):
                             confidence=confidence,
                             reasoning=reasoning
                         )
-                        self.get_logger().info(f'✓ Saved debug image: {Path(saved_path).name}')
+                        self.get_logger().info(f'Saved debug image: {Path(saved_path).name}')
                     except Exception as e:
                         self.get_logger().error(f'Failed to save debug image: {e}')
 
@@ -473,7 +473,7 @@ class VLMNode(Node):
                     # NEW: Publish grounding with bbox for coordinator
                     self._publish_grounding(target_object, center, action, vlm_infer_ms=vlm_infer_ms)
             else:
-                self.get_logger().warn(f'✗ Could not locate "{target_object}"')
+                self.get_logger().warn(f'Could not locate "{target_object}"')
                 # Special message for hand detection failure during handover
                 if target_object.lower() == 'hand' and action == 'handover':
                     error_msg = "I don't see your hand. Please show your hand clearly in front of the camera."
@@ -483,7 +483,7 @@ class VLMNode(Node):
         else:
             # Check if this was a "not found" response vs actual VLM failure
             if result and result.get('not_found'):
-                self.get_logger().warn(f'✗ VLM could not find "{target_object}"')
+                self.get_logger().warn(f'VLM could not find "{target_object}"')
                 # Special message for hand detection failure during handover
                 if target_object.lower() == 'hand' and action == 'handover':
                     error_msg = "I don't see your hand. Please show your hand clearly in front of the camera."
@@ -491,7 +491,7 @@ class VLMNode(Node):
                 else:
                     self._publish_explanation(f'I cannot find "{target_object}" in the camera view.')
             else:
-                self.get_logger().error(f'✗ Failed to get response from VLM')
+                self.get_logger().error(f'Failed to get response from VLM')
                 self._publish_explanation('Vision system is not responding. Please try again.')
     
     def _handle_describe_request(self):
@@ -505,7 +505,7 @@ class VLMNode(Node):
         description = self.vlm_client.describe_scene(image_base64)
         
         if description:
-            self.get_logger().info(f'✓ Scene description:\n{description}')
+            self.get_logger().info(f'Scene description:\n{description}')
             
             # Save image BEFORE publishing so web_handler finds the right file
             if self.save_images and self.debug_dir:
@@ -519,13 +519,13 @@ class VLMNode(Node):
                         action='inspect',
                         user_prompt='scene description'
                     )
-                    self.get_logger().info(f'✓ Saved debug image: {Path(saved_path).name}')
+                    self.get_logger().info(f'Saved debug image: {Path(saved_path).name}')
                 except Exception as e:
                     self.get_logger().error(f'Failed to save debug image: {e}')
             
             self._publish_explanation(description)
         else:
-            self.get_logger().error('✗ Failed to get scene description')
+            self.get_logger().error('Failed to get scene description')
     
     def _publish_explanation(self, text: str):
         """Publish explanation/result text"""
@@ -579,7 +579,7 @@ class VLMNode(Node):
         placement_info += ")"
         
         self.get_logger().info(
-            f'📤 Published grounding: {target_name} bbox=[{x1},{y1},{x2},{y2}]{placement_info} → /vlm_grounding'
+            f'Published grounding: {target_name} bbox=[{x1},{y1},{x2},{y2}]{placement_info} -> /vlm_grounding'
         )
     
     def _publish_system_info(self):

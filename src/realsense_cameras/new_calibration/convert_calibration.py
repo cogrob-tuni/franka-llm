@@ -38,7 +38,7 @@ rotation_vector = load_old_pickle('rotation_vector.pkl')
 translation_vector = load_old_pickle('translational_vector.pkl')
 
 if rotation_vector is None or translation_vector is None:
-    print("\n❌ Could not load calibration files!")
+    print("\nCould not load calibration files!")
     print("You need to re-run camera_calibration.py to generate new files.")
     sys.exit(1)
 

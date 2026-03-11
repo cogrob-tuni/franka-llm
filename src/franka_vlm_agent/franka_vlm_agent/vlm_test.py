@@ -17,27 +17,27 @@ def test_ollama_connection(ollama_host):
     try:
         response = requests.get(f'{ollama_host}/api/tags', timeout=5)
         if response.status_code == 200:
-            print(f'✓ Ollama is running at {ollama_host}')
+            print(f'Ollama is running at {ollama_host}')
             models = response.json().get('models', [])
             if models:
-                print(f'✓ Available models:')
+                print(f'Available models:')
                 for model in models:
                     print(f'  - {model.get("name")}')
                 return True
             else:
-                print('⚠ No models found. Pull a model first:')
+                print('No models found. Pull a model first:')
                 print('  ollama pull llava:7b')
                 return False
         else:
-            print(f'✗ Ollama returned error: {response.status_code}')
+            print(f'Ollama returned error: {response.status_code}')
             return False
     except requests.exceptions.ConnectionError:
-        print(f'✗ Cannot connect to Ollama at {ollama_host}')
+        print(f'Cannot connect to Ollama at {ollama_host}')
         print('Make sure Ollama is running:')
         print('  ollama serve')
         return False
     except Exception as e:
-        print(f'✗ Error: {e}')
+        print(f'Error: {e}')
         return False
 
 
@@ -46,7 +46,7 @@ def test_vlm_with_image(ollama_host, model, image_path):
     
     # Check if image exists
     if not Path(image_path).exists():
-        print(f'✗ Image not found: {image_path}')
+        print(f'Image not found: {image_path}')
         return False
     
     try:
@@ -91,18 +91,18 @@ def test_vlm_with_image(ollama_host, model, image_path):
             print(explanation)
             print('-' * 50)
             print(f'Time taken: {elapsed:.1f}s')
-            print(f'✓ Test successful!')
+            print(f'Test successful!')
             return True
         else:
-            print(f'✗ API error: {response.status_code}')
+            print(f'API error: {response.status_code}')
             print(response.text)
             return False
             
     except requests.exceptions.Timeout:
-        print(f'✗ Request timed out after 120 seconds')
+        print(f'Request timed out after 120 seconds')
         return False
     except Exception as e:
-        print(f'✗ Error: {e}')
+        print(f'Error: {e}')
         return False
 
 
@@ -131,11 +131,11 @@ def create_test_image():
         test_image_path = '/tmp/vlm_test_image.jpg'
         cv2.imwrite(test_image_path, img)
         
-        print(f'✓ Created test image: {test_image_path}')
+        print(f'Created test image: {test_image_path}')
         return test_image_path
         
     except ImportError:
-        print('⚠ OpenCV not available. Cannot create test image.')
+        print('OpenCV not available. Cannot create test image.')
         return None
 
 

@@ -69,7 +69,7 @@ class ArucoTransformer:
             z
         ])
         
-        print(f"\n📷 Camera frame: {X_cam}")
+        print(f"\nCamera frame: {X_cam}")
         
         # Step 2: Transform to ArUco frame
         X_aruco = self.R_aruco_cam @ X_cam + self.t_aruco_cam
@@ -197,7 +197,7 @@ def test_interactive():
             elif key == ord('s'):
                 filename = f'test_frame_{frame_count:03d}.jpg'
                 cv2.imwrite(filename, color_image)
-                print(f"\n💾 Saved: {filename}")
+                print(f"\nSaved: {filename}")
                 frame_count += 1
     
     finally:

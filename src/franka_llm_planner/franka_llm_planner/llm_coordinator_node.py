@@ -308,7 +308,7 @@ Examples:
         reasoning = decision.get('reasoning', '')
         
         # Log LLM decision details — include inference time so web_handler can store it
-        self._publish_log(f'💭 LLM ({self.model})', 
+        self._publish_log(f'LLM ({self.model})', 
                          f'Decision: **{intent}** → Routing to **{target_agent}**',
                          extra={'llm_infer_ms': self._last_llm_eval_ms})
         if reasoning:
