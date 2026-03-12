@@ -268,14 +268,22 @@ class MotionExecutorNode(Node):
         safe_height = self.config['robot']['safe_height']
         velocity = self.config['robot']['slow_velocity_scaling']
         placement_clearance = self.config['robot']['placement_clearance']
-        
+        min_place_z = self.config['robot'].get('min_place_z', 0.14)
+
+        # Clamp: never descend below min_place_z regardless of VLM depth noise
+        place_z = max(z - placement_clearance, min_place_z)
+        if place_z != z - placement_clearance:
+            self.get_logger().warn(
+                f'Place Z clamped: {z - placement_clearance:.3f}m → {place_z:.3f}m '
+                f'(min_place_z={min_place_z:.3f}m)'
+            )
+
         self.get_logger().info('Step 1: Moving to position above placement location')
         self.manip.move_to_position(x, y, safe_height, velocity_scaling=velocity)
         time.sleep(1.0)
-        
-        self.get_logger().info(f'Step 2: Moving down to placement height (Z={z:.3f}m)')
-        # Use actual Z coordinate from target position (includes object height for stacking)
-        self.manip.move_to_position(x, y, z - placement_clearance, velocity_scaling=velocity)
+
+        self.get_logger().info(f'Step 2: Moving down to placement height (Z={place_z:.3f}m)')
+        self.manip.move_to_position(x, y, place_z, velocity_scaling=velocity)
         time.sleep(1.0)
         
         self.get_logger().info('Step 3: Opening gripper to release')

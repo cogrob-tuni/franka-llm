@@ -3,14 +3,14 @@
 
 # LLM Coordinator Settings
 llm:
-  model: "llama3.1:8b"              # Available models: llama3.1:8b, gemma3:27b
+  model: "qwen2.5:7b"              # Available models: llama3.1:8b, gemma3:27b
   ollama_url: "http://localhost:11434"
   temperature: 0.3
   timeout: 60
 
 # VLM Agent Settings  
 vlm:
-  model: "qwen2.5vl:32b"       # Mid-size Qwen vision model - balance of accuracy and stability
+  model: "llama3.2-vision:90b"       # Mid-size Qwen vision model - balance of accuracy and stability
   ollama_url: "http://localhost:11434"
   temperature: 0.0                    # Lower = more consistent/deterministic
   timeout: 300                        # Extended timeout for large 32B model (5 minutes)
@@ -42,6 +42,7 @@ robot:
   # Motion execution
   safe_height: 0.60                   # Safe approach height (meters)
   grasp_height: 0.14                  # Height for grasp execution (meters)
+  min_place_z: 0.14                   # Hard floor for any place/stack Z (meters) - prevents table collision
   position_offset_x: 0.0             # X offset for positioning (meters)
   
   # Gripper settings
