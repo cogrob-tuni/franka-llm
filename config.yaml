@@ -3,14 +3,14 @@
 
 # LLM Coordinator Settings
 llm:
-  model: "qwen2.5:7b"              # Available models: llama3.1:8b, gemma3:27b
+  model: "ministral-3:8b"              # Available models: llama3.1:8b, qwen2.5:7b, deepseek-r1:7b
   ollama_url: "http://localhost:11434"
   temperature: 0.3
   timeout: 60
 
 # VLM Agent Settings  
 vlm:
-  model: "llama3.2-vision:90b"       # Mid-size Qwen vision model - balance of accuracy and stability
+  model: "qwen2.5vl:32b"       # llama3.2-vision:90b, qwen2.5vl:32b, llava:7b
   ollama_url: "http://localhost:11434"
   temperature: 0.0                    # Lower = more consistent/deterministic
   timeout: 300                        # Extended timeout for large 32B model (5 minutes)

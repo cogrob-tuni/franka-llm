@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const EVAL_PROMPTS = {
         pick:     ['pick the yellow dice', 'grab the yellow dice', 'pick up the yellow dice not the red dice', 'can you pick up the yellow dice', 'I need you to pick the yellow dice'],
         place:    ['place it to the left of the red dice', 'put it to the right of the red dice', 'place it above the red dice', 'place it below the red dice', 'put it right side of the red dice'],
-        handover: ['give it to me', 'hand it over', 'pass it to me', 'can you give me the dice', 'deliver the die carefully to my hand'],
+        handover: ['give it to me', 'hand it over', 'pass it to me', 'can you give me the dice', 'deliver the dice carefully to my hand'],
     };
 
     document.getElementById('evalInsertBtn').addEventListener('click', () => {
