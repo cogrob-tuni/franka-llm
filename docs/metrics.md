@@ -71,4 +71,4 @@ All prompts below are used verbatim during the benchmark. 5 trials per task × s
 | 2 | hand it over |
 | 3 | pass it to me |
 | 4 | can you give me the dice |
-| 5 | deliver the die carefully to my hand |
+| 5 | deliver the dice carefully to my hand |

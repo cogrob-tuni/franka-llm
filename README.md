@@ -72,17 +72,28 @@ This system enables natural language control of a Franka FR3 robot arm for pick-
 
 ### Web Dashboard
 
-![Live system monitoring view](docs/image%20copy%203.png)
+![Live system monitoring view](docs/Live-system-monitoring-view.png)
 
 ### Command and Status View
 
-![Command and status panel](docs/image%20copy.png)
+![Command and status panel](docs/Command-and-status-panel.png)
 
 ### Confirmation Workflow
 
-![User confirmation dialog](docs/image%20copy%202.png)
+![User confirmation dialog](docs/User-confirmation-dialog.png)
+
 ### Live Monitoring
-![Web dashboard overview](docs/image.png)
+
+![Web dashboard overview](docs/Web-dashboard-overview.png)
+
+### Featured Experiment Photo + Special Reasoning
+
+![Featured experiment: pick yellow dice](docs/FEATURED-pick_yellow_dice_with_the_highest_value_ministral-3-8b_qwen2.5vl-32b_Mar12_19-39-03.jpg)
+
+This featured capture represents the full reasoning chain used in our benchmark:
+
+- **Intent reasoning (LLM):** The command is interpreted as a manipulation request (`pick`) and routed to both perception and motion modules.
+- **Grounding reasoning (VLM):** The target object (`yellow dice with highest value which is 6 in a normal dice`) is localized from camera input before any motion is planned.
 
 
 ## Packages
