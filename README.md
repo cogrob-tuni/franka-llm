@@ -68,6 +68,23 @@ This system enables natural language control of a Franka FR3 robot arm for pick-
 └─────────────────┘      └──────────────────┘
 ```
 
+## System Screenshots
+
+### Web Dashboard
+
+![Live system monitoring view](docs/image%20copy%203.png)
+
+### Command and Status View
+
+![Command and status panel](docs/image%20copy.png)
+
+### Confirmation Workflow
+
+![User confirmation dialog](docs/image%20copy%202.png)
+### Live Monitoring
+![Web dashboard overview](docs/image.png)
+
+
 ## Packages
 
 ### 1. franka_coordinator
@@ -447,6 +464,8 @@ grep "Configuration" <(ros2 run franka_motion_executor motion_executor 2>&1)
 
 - [Architecture](docs/architecture.md)
 - [Setup Guide](docs/setup.md)
+- [Experiment Metrics](docs/metrics.md)
+- [Experiment System Log](docs/system_log.txt)
 
 ## Citations & References
 
