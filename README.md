@@ -1,4 +1,6 @@
-# Franka LLM - Intelligent Robotic Manipulation System
+# A Conversational framework for Human-Robot Collaborative Manipulation with Distributed AI models
+
+
 
 <div align="center">
 
@@ -9,8 +11,6 @@
 ![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)
 ![ROS2](https://img.shields.io/badge/ROS2-Jazzy-lightblue.svg)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)
-
-**A Conversational framework for Human-Robot Collaborative Manipulation with Distributed AI models**
 
 [Quick Start](#quick-start-1️⃣) • [Documentation](#documentation-5️⃣) • [Usage](#usage-examples) • [Packages](#packages-2️⃣)
 
