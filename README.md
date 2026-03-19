@@ -60,21 +60,15 @@ Commands flow through natural language understanding (LLaMA 3.1 8B), vision grou
 
 **Pick & Place with Franka FR3**
 
-Real time demonstration of the system picking up object based on natural language commands and placing them at target locations.
+Real-time demonstration of the system picking up objects based on natural language commands and placing them at target locations.
 
-<video width="640" height="480" controls>
-  <source src="recordings/pick&place_withFranka.gif" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+![Pick and Place Demo](recordings/pick&place_withFranka.gif)
 
 **Scene Description & Understanding**
 
 The system analyzes the workspace, detects multiple objects, and describes what it sees.
 
-<video width="640" height="480" controls>
-  <source src="recordings/scene-description_withFranka.gif" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+![Scene Description Demo](recordings/scene-description_withFranka.gif)
 
 
 ## Packages
