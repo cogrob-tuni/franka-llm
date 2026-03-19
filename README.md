@@ -127,7 +127,7 @@ VLM analyzing workspace and detecting multiple objects.
 
 ```bash
 # Clone
-git clone https://github.com/Arashghsz/franka-llm.git && cd franka-llm
+git clone https://github.com/cogrob-tuni/franka-llm.git && cd franka-llm
 
 # Setup Ollama & models
 curl -fsSL https://ollama.com/install.sh | sh
@@ -478,7 +478,7 @@ main             ← Stable releases
 ### Questions?
 - arash.ghasemzadehkakroudi@tuni.fi
 - roel.pieters@tuni.fi
-- [Open GitHub issue](https://github.com/Arashghsz/franka-llm/issues)
+- [Open GitHub issue](https://github.com/cogrob-tuni/franka-llm/issues)
 
 </details>
 
@@ -510,7 +510,7 @@ main             ← Stable releases
 
 ### Ready to Get Started?
 
-**[Quick Start](#quick-start)** | **[Documentation](docs/architecture.md)** | **[Report Issues](https://github.com/Arashghsz/franka-llm/issues)**
+**[Quick Start](#quick-start)** | **[Documentation](docs/architecture.md)** | **[Report Issues](https://github.com/cogrob-tuni/franka-llm/issues)**
 
 Made with ❤️ for robotics research
 

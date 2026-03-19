@@ -19,7 +19,7 @@ ollama pull qwen2.5vl:32b
 
 ### 2. Clone Repository
 ```bash
-git clone https://github.com/Arashghsz/franka-llm.git
+git clone https://github.com/cogrob-tuni/franka-llm.git
 cd franka-llm
 ```
 
