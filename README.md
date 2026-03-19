@@ -425,6 +425,7 @@ grep "Configuration" <(ros2 run franka_motion_executor motion_executor 2>&1)
 - [Architecture](docs/architecture.md)
 - [Setup Guide](docs/setup.md)
 - [Experiment Metrics](docs/metrics.md)
+- [Experiment Results (CSV)](robot_llm_vlm_experiments.csv) - Detailed benchmark results with model performance metrics
 - [Experiment System Log](docs/system_log.txt)
 
 ## Contributing
