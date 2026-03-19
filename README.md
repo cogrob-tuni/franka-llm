@@ -4,15 +4,15 @@
 
 ![System Overview](figures/fig1-intro.png)
 
-[![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg)]() 
-[![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)]()
-[![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)]()
-[![ROS2](https://img.shields.io/badge/ROS2-Jazzy-lightblue.svg)]()
-[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)]()
+![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg)
+![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)
+![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)
+![ROS2](https://img.shields.io/badge/ROS2-Jazzy-lightblue.svg)
+![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)
 
 **A Conversational framework for Human-Robot Collaborative Manipulation with Distributed AI models**
 
-[Quick Start](#quick-start) • [Documentation](#documentation) • [Usage](#usage-examples) • [Packages](#packages)
+[Quick Start](#quick-start-1️⃣) • [Documentation](#documentation-5️⃣) • [Usage](#usage-examples) • [Packages](#packages-2️⃣)
 
 </div>
 
@@ -24,7 +24,7 @@ This system enables **natural language control** of a Franka FR3 robot arm for i
 
 | Component | Technology | Purpose |
 |-----------|-----------|---------|
-| **LLM** | LLaMA 3.1 8B | Natural language understanding & command routing |
+| **LLM** | Ministral 3 8B | Natural language understanding & command routing |
 | **VLM** | Qwen2.5-VL 32B | Scene understanding & object grounding |
 | **Motion** | MoveIt2 + ROS2 | Motion planning & collision avoidance |
 | **Calibration** | ArUco Markers | Camera-to-robot coordinate transformation |
@@ -94,21 +94,13 @@ This system enables **natural language control** of a Franka FR3 robot arm for i
 
 **Task Success Rates**
 
-<details>
-<summary><b>Expand Results</b></summary>
-
 | Task Type | Single | Overlapped | Multiple |
 |-----------|--------|-----------|----------|
 | **Pick** | [Results](figures/evaluation/pickup_single.pdf) | [Results](figures/evaluation/pickup_overlapped.pdf) | [Results](figures/evaluation/pickup_multiple.pdf) |
 | **Place** | [Results](figures/evaluation/place_single.pdf) | [Results](figures/evaluation/place_overlapped.pdf) | [Results](figures/evaluation/place_multiple.pdf) |
 | **Handover** | [Results](figures/evaluation/handover_single.pdf) | [Results](figures/evaluation/handover_overlapped.pdf) | [Results](figures/evaluation/handover_multiple.pdf) |
 
-</details>
-
 ### Video Demonstrations
-
-<details>
-<summary><b>View Demonstrations</b></summary>
 
 **Pick & Place with Franka FR3**  
 Real-world execution of natural language commands with vision grounding.
@@ -119,8 +111,6 @@ Real-world execution of natural language commands with vision grounding.
 VLM analyzing workspace and detecting multiple objects.
 
 ![Scene Description Demo](recordings/scene-description_withFranka.gif)
-
-</details>
 
 ---
 
@@ -264,7 +254,7 @@ You:    "dance" → [7-position creative motion]
 
 **Natural language understanding**
 
-- LLaMA 3.1 8B command parsing
+- Ministral 3 8B command parsing
 - Intent routing to agents
 - Response generation
 
