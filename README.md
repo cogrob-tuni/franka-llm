@@ -63,7 +63,7 @@ Commands flow through natural language understanding (LLaMA 3.1 8B), vision grou
 Real time demonstration of the system picking up object based on natural language commands and placing them at target locations.
 
 <video width="640" height="480" controls>
-  <source src="recordings/pick&place_withFranka.mp4" type="video/mp4">
+  <source src="recordings/pick&place_withFranka.gif" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
@@ -72,7 +72,7 @@ Real time demonstration of the system picking up object based on natural languag
 The system analyzes the workspace, detects multiple objects, and describes what it sees.
 
 <video width="640" height="480" controls>
-  <source src="recordings/scene-description_withFranka.mp4" type="video/mp4">
+  <source src="recordings/scene-description_withFranka.gif" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 
