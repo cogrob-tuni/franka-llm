@@ -28,7 +28,7 @@ See **[/RUNNING.md](../../RUNNING.md)** for complete system startup.
 
 **Start web server:**
 ```bash
-cd /home/arash/franka-llm/ui/web_chat_dashboard
+cd ~/franka-llm/ui/web_chat_dashboard
 python3 -m http.server 8000
 ```
 
@@ -147,7 +147,7 @@ ros2 run franka_coordinator coordinator_node --ros-args --log-level debug
 
 **Images not showing:**
 - VLM not saving debug images
-- Check `/home/arash/franka-llm/debug_images/` directory
+- Check `~/franka-llm/debug_images/` directory
 
 **Confirmation dialog not appearing:**
 - Web Handler must start AFTER web server

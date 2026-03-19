@@ -85,7 +85,7 @@ Coordinate transformation utility:
 
 ## Configuration
 
-All configuration is loaded from `/home/arash/franka-llm/config.yaml`:
+All configuration is loaded from `~/franka-llm/config.yaml`:
 
 ```yaml
 camera:

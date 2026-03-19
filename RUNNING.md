@@ -33,7 +33,7 @@ ollama serve
 
 ```bash
 # Terminal 2
-cd /home/arash/franka-llm/ui/web_chat_dashboard
+cd ~/franka-llm/ui/web_chat_dashboard
 python3 -m http.server 8000
 ```
 
@@ -49,7 +49,7 @@ ros2 launch rosbridge_server rosbridge_websocket_launch.xml
 
 ```bash
 # Terminal 4
-cd /home/arash/franka-llm
+cd ~/franka-llm
 source install/setup.zsh
 ros2 launch realsense_cameras ee_camera.launch.py
 ```
@@ -58,7 +58,7 @@ ros2 launch realsense_cameras ee_camera.launch.py
 
 ```bash
 # Terminal 5
-cd /home/arash/franka-llm
+cd ~/franka-llm
 source install/setup.zsh
 ros2 run franka_llm_planner llm_coordinator
 ```
@@ -67,7 +67,7 @@ ros2 run franka_llm_planner llm_coordinator
 
 ```bash
 # Terminal 6
-cd /home/arash/franka-llm
+cd ~/franka-llm
 source install/setup.zsh
 ros2 run franka_vlm_agent vlm_node
 ```
@@ -76,7 +76,7 @@ ros2 run franka_vlm_agent vlm_node
 
 ```bash
 # Terminal 7
-cd /home/arash/franka-llm
+cd ~/franka-llm
 source install/setup.zsh
 ros2 run franka_coordinator web_handler
 ```
@@ -85,7 +85,7 @@ ros2 run franka_coordinator web_handler
 
 ```bash
 # Terminal 8
-cd /home/arash/franka-llm
+cd ~/franka-llm
 source install/setup.zsh
 ros2 run franka_coordinator coordinator_node
 ```
@@ -94,7 +94,7 @@ ros2 run franka_coordinator coordinator_node
 
 ```bash
 # Terminal 9
-cd /home/arash/franka-llm
+cd ~/franka-llm
 source install/setup.zsh
 ros2 run franka_motion_executor motion_executor
 ```

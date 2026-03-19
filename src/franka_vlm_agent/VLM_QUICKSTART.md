@@ -16,14 +16,14 @@ PC Controller (Camera) --[ROS2 Network]--> Jetson (VLM Processing)
 ```bash
 ollama serve &
 ollama pull llava:7b
-cd /home/arash/franka-llm
+cd ~/franka-llm
 colcon build --packages-select franka_vlm_agent
 ```
 
 ### Run VLM on Jetson
 ```bash
 export ROS_DOMAIN_ID=0
-cd /home/arash/franka-llm
+cd ~/franka-llm
 source install/setup.zsh
 ros2 run franka_vlm_agent vlm_node --ros-args \
   -p camera_topic:=/cameras/ee/ee_camera/color/image_raw \
@@ -33,7 +33,7 @@ ros2 run franka_vlm_agent vlm_node --ros-args \
 ### View Output on PC
 ```bar any machine) subscribes to /vlm/explanationsh
 export ROS_DOMAIN_ID=0
-cd /home/arash/franka-llm
+cd ~/franka-llm
 source install/setup.bash  # or setup.zsh
 python3 view_vlm_output.py
 ```

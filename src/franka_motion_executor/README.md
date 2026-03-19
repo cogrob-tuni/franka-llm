@@ -56,7 +56,7 @@ Main motion execution node that:
 
 ## Configuration
 
-Motion parameters from `/home/arash/franka-llm/config.yaml`:
+Motion parameters from `~/franka-llm/config.yaml`:
 
 ```yaml
 robot:

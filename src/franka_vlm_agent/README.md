@@ -50,7 +50,7 @@ Main VLM processing node that:
 
 ## Configuration
 
-VLM settings from `/home/arash/franka-llm/config.yaml`:
+VLM settings from `~/franka-llm/config.yaml`:
 
 ```yaml
 vlm:

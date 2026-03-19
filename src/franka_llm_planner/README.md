@@ -86,7 +86,7 @@ The LLM is configured with a detailed system prompt that defines:
 
 ## Configuration
 
-LLM settings from `/home/arash/franka-llm/config.yaml`:
+LLM settings from `~/franka-llm/config.yaml`:
 
 ```yaml
 llm:
