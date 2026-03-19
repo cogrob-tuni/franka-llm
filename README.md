@@ -422,7 +422,7 @@ eog ~/franka-llm/debug_images/vlm_debug_*.jpg
 | [Setup Guide](docs/setup.md) | Detailed installation instructions |
 | [Metrics](docs/metrics.md) | Performance evaluation criteria |
 | [System Log](docs/system_log.txt) | Experiment logs & timestamps |
-| [Experiment Results](robot_llm_llm_experiments.csv) | Benchmark data (180ials) |
+| [Experiment Results](robot_llm_vlm_experiments.csv) | Benchmark data (180 trials) |
 | [Running Guide](RUNNING.md) | Full operation manual |
 | [VLM Setup](src/franka_vlm_agent/VLM_QUICKSTART.md) | Vision model configuration |
 
