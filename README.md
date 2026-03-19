@@ -1,154 +1,155 @@
 # Franka LLM - Intelligent Robotic Manipulation System
 
+<div align="center">
+
 ![System Overview](figures/fig1-intro.png)
 
-**Version**: 1.0.0 | **Status**: Production Ready | **Release Date**: March 2026
+[![Version](https://img.shields.io/badge/Version-1.0.0-blue.svg)]() 
+[![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen.svg)]()
+[![License](https://img.shields.io/badge/License-Apache%202.0-orange.svg)]()
+[![ROS2](https://img.shields.io/badge/ROS2-Jazzy-lightblue.svg)]()
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)]()
 
-**Project**: Natural language-driven robotic manipulation using Vision-Language Models and LLMs  
-**Robot**: Franka Emika FR3 7-DOF arm with gripper  
-**Framework**: ROS2 Jazzy, MoveIt2, Ollama (LLaMA 3.1 + Qwen2.5-VL)
+**A Conversational framework for Human-Robot Collaborative Manipulation with Distributed AI models**
+
+[Quick Start](#quick-start) • [Documentation](#documentation) • [Usage](#usage-examples) • [Packages](#packages)
+
+</div>
+
+---
 
 ## Overview
 
-This system enables natural language control of a Franka FR3 robot arm for pick-and-place tasks. Users interact via a web dashboard, sending commands like "pick up the blue cube" or "place it next to the red block". The system uses:
+This system enables **natural language control** of a Franka FR3 robot arm for intelligent pick-and-place tasks using cutting-edge LLMs and VLMs. Users interact via an intuitive **web dashboard**, sending commands like *"pick up the blue cube"* and the system handles the rest—from vision understanding to motion execution.
 
-- **LLM (LLaMA 3.1 8B)** - Command understanding and task routing
-- **VLM (Qwen2.5-VL 32B)** - Visual object detection and grounding
-- **MoveIt2** - Motion planning and collision avoidance
-- **ArUco calibration** - Camera-to-robot coordinate transformation
-- **Web dashboard** - Real-time monitoring and user confirmation
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| **LLM** | LLaMA 3.1 8B | Natural language understanding & command routing |
+| **VLM** | Qwen2.5-VL 32B | Scene understanding & object grounding |
+| **Motion** | MoveIt2 + ROS2 | Motion planning & collision avoidance |
+| **Calibration** | ArUco Markers | Camera-to-robot coordinate transformation |
+| **Interface** | Web Dashboard | Real-time monitoring & user confirmation |
 
-## Features
+---
 
-✅ Natural language command processing  
-✅ Vision-guided object manipulation  
-✅ User confirmation workflow for safety  
-✅ Multiple placement types (direct, stacking, relative)  
-✅ Handover to human capability  
-✅ Special motions (go home, dance sequence)  
-✅ Real-time web dashboard with status and configuration display  
-✅ Centralized configuration in `config.yaml`  
-✅ Debug image visualization  
+## Key Features
+
+| Feature | Description |
+|---------|---|
+| **Natural Language Commands** | Control robot via natural language |
+| **Vision-Guided Manipulation** | VLM-based object detection & grounding |
+| **Safety-First** | User confirmation workflow for all motions |
+| **Multiple Task Types** | Pick, place, handover, custom sequences |
+| **Modern Dashboard** | Real-time status, confirmations, image display |
+| **Centralized Config** | Single `config.yaml` for all settings |
+| **Debug Visualization** | Annotated images for monitoring & analysis |
+
+---
 
 ## System Architecture
 
 ![System Dataflow](figures/fig2_dataflow_franka-llm.drawio.png)
 
-Commands flow through natural language understanding (LLaMA 3.1 8B), vision grounding (Qwen2.5-VL 32B), coordinate transformation via ArUco calibration, and motion execution via MoveIt2 with real-time feedback through the web dashboard.
+<details>
+<summary><b>How It Works</b></summary>
 
-## Results
+```
+1. User speaks command via dashboard
+2. LLM understands intent & routes request
+3. VLM detects objects in scene
+4. Coordinator transforms 2D→3D coordinates
+5. Dashboard shows confirmation with target
+6. User approves motion
+7. MoveIt2 plans collision-free path
+8. Robot executes with velocity scaling
+9. Real-time feedback to dashboard
+```
+
+</details>
+
+---
+
+## Results & Demonstrations
 
 ### Web Interface
 
-![Dashboard](figures/Live-system-monitoring-view.png) ![Confirmation](figures/User-confirmation-dialog.png)
+<div align="center">
+
+![Dashboard](figures/Live-system-monitoring-view.png) 
+![Confirmation](figures/User-confirmation-dialog.png)
+
+*Live monitoring and user confirmation interface*
+
+</div>
 
 ### Evaluation & Performance
 
+<div align="center">
+
 **Object Detection Accuracy**
 
-[Successful detections](figures/evaluation/successful-object-detection.pdf) | [Detection challenges](figures/evaluation/failed-object-detection.pdf)
+[Successful](figures/evaluation/successful-object-detection.pdf) | [Challenges](figures/evaluation/failed-object-detection.pdf)
 
-**Task Execution Success Rates**
+</div>
 
-*Pick Tasks:* [Single objects](figures/evaluation/pickup_single.pdf) | [Overlapped objects](figures/evaluation/pickup_overlapped.pdf) | [Multiple objects](figures/evaluation/pickup_multiple.pdf)
+**Task Success Rates**
 
-*Placement Tasks:* [Single target](figures/evaluation/place_single.pdf) | [Overlapped placement](figures/evaluation/place_overlapped.pdf) | [Multiple targets](figures/evaluation/place_multiple.pdf)
+<details>
+<summary><b>Expand Results</b></summary>
 
-*Handover Tasks:* [Single handover](figures/evaluation/handover_single.pdf) | [Overlapped scenarios](figures/evaluation/handover_overlapped.pdf) | [Sequential handovers](figures/evaluation/handover_multiple.pdf)
+| Task Type | Single | Overlapped | Multiple |
+|-----------|--------|-----------|----------|
+| **Pick** | [Results](figures/evaluation/pickup_single.pdf) | [Results](figures/evaluation/pickup_overlapped.pdf) | [Results](figures/evaluation/pickup_multiple.pdf) |
+| **Place** | [Results](figures/evaluation/place_single.pdf) | [Results](figures/evaluation/place_overlapped.pdf) | [Results](figures/evaluation/place_multiple.pdf) |
+| **Handover** | [Results](figures/evaluation/handover_single.pdf) | [Results](figures/evaluation/handover_overlapped.pdf) | [Results](figures/evaluation/handover_multiple.pdf) |
+
+</details>
 
 ### Video Demonstrations
 
-**Pick & Place with Franka FR3**
+<details>
+<summary><b>View Demonstrations</b></summary>
 
-Real-time demonstration of the system picking up objects based on natural language commands and placing them at target locations.
+**Pick & Place with Franka FR3**  
+Real-world execution of natural language commands with vision grounding.
 
 ![Pick and Place Demo](recordings/pick&place_withFranka.gif)
 
-**Scene Description & Understanding**
-
-The system analyzes the workspace, detects multiple objects, and describes what it sees.
+**Scene Description & Understanding**  
+VLM analyzing workspace and detecting multiple objects.
 
 ![Scene Description Demo](recordings/scene-description_withFranka.gif)
 
+</details>
 
-## Packages
+---
 
-### 1. franka_coordinator
-Main coordination layer that bridges all components. Handles VLM grounding, 3D coordinate transformations, user confirmations, and system status.
-
-**Key files:**
-- `coordinator_node.py` - Main coordination and 3D transforms
-- `web_handler.py` - Web interface bridge
-- `aruco_transformer.py` - Camera-robot calibration
-
-[Full documentation](src/franka_coordinator/README.md)
-
-### 2. franka_llm_planner
-Natural language understanding using LLaMA 3.1. Parses user commands and routes to appropriate agents (VLM, Motion, or direct response).
-
-**Key files:**
-- `llm_coordinator_node.py` - LLM processing and routing
-
-[Full documentation](src/franka_llm_planner/README.md)
-
-### 3. franka_motion_executor
-MoveIt2-based motion execution. Implements pick, place, handover, go_home, and dance primitives with safety constraints.
-
-**Key files:**
-- `motion_executor_node.py` - Motion planning and execution
-
-[Full documentation](src/franka_motion_executor/README.md)
-
-### 4. franka_vlm_agent
-Vision-Language Model for scene understanding and object detection using Qwen2.5-VL.
-
-**Key files:**
-- `vlm_node.py` - VLM processing and object grounding
-
-[Full documentation](src/franka_vlm_agent/README.md)
-
-### 5. franka_vision_detection
-(Legacy computer vision - being replaced by VLM)
-
-### 6. realsense_cameras
-Intel RealSense camera integration for RGB-D sensing.
-
-## Quick Start
+## Quick Start (1️⃣)
 
 ### Prerequisites
 
-- Ubuntu 22.04 LTS
-- Python 3.10+
-- ROS2 Jazzy
-- MoveIt2
-- Ollama with models: `ministral-3:8b`, `qwen2.5vl:32b`
-- NVIDIA GPU (recommended for VLM)
+```
+✓ Ubuntu 22.04 LTS      ✓ Python 3.10+         ✓ ROS2 Jazzy
+✓ MoveIt2              ✓ Ollama               ✓ NVIDIA GPU (recommended)
+```
 
 ### Installation
 
 ```bash
-# 1. Clone repository
-git clone https://github.com/Arashghsz/franka-llm.git
-cd franka-llm
+# Clone
+git clone https://github.com/Arashghsz/franka-llm.git && cd franka-llm
 
-# 2. Install Ollama and models
+# Setup Ollama & models
 curl -fsSL https://ollama.com/install.sh | sh
-ollama pull ministral-3:8b
-ollama pull qwen2.5vl:32b
+ollama pull ministral-3:8b && ollama pull qwen2.5vl:32b
 
-# 3. Install Python dependencies (if any)
-pip install -r requirements.txt  # if exists
-
-# 4. Build ROS2 packages
-colcon build --symlink-install
-
-# 5. Source setup
-source install/setup.sh  # Works for both bash and zsh
+# Build ROS2 packages
+colcon build --symlink-install && source install/setup.sh
 ```
 
 ### Configuration
 
-All configuration is in `config.yaml`. Key parameters:
+All settings in `config.yaml`:
 
 ```yaml
 llm:
@@ -159,293 +160,368 @@ vlm:
   model: "qwen2.5vl:32b"
   base_url: "http://localhost:11434"
 
-camera:
-  aruco_offset_x: 0.0    # Calibration offsets (meters)
-  aruco_offset_y: 0.0
-  aruco_offset_z: 0.0
-
 robot:
-  safe_height: 0.60      # Navigation height (meters)
-  grasp_height: 0.14     # Grasp height
-  handover_height: 0.30  # Handover height
-  default_velocity_scaling: 0.1  # Movement speed (10%)
+  safe_height: 0.60       # Navigation height (m)
+  grasp_height: 0.14      # Grasp height (m)
+  handover_height: 0.30   # Handover height (m)
 ```
 
-### Running the System
+### Running
 
-See **[RUNNING.md](RUNNING.md)** for complete startup instructions.
-
-**Quick start:**
 ```bash
-./start_system.sh  # Start all nodes
-./stop_system.sh   # Stop all nodes
+./start_system.sh    # Start all nodes
+./stop_system.sh     # Stop all nodes
 ```
 
-**Access:** http://localhost:8000
+**Access**: http://localhost:8000
+
+**Full guide**: [RUNNING.md](RUNNING.md)
+
+---
 
 ## Usage Examples
 
-### Basic Commands
+<details>
+<summary><b>Pick & Place</b></summary>
 
-**Pick and place:**
 ```
-User: "pick up the blue cube"
-→ System detects cube, shows confirmation
-→ User clicks "Approve"
-→ Robot picks cube
+You:    "pick up the blue cube"
+Robot:  [Detects object] ✓ [Shows confirmation]
+You:    [Clicks Approve]
+Robot:  [Grasps & lifts] ✓
 
-User: "place it on the table"
-→ System shows target position
-→ User approves
-→ Robot places cube
+You:    "place it on the table"
+Robot:  [Plans path] ✓ [Executes placement]
 ```
 
-**Stacking:**
-```
-User: "stack the small cube on top of the red block"
-→ System calculates stacking height
-→ Shows confirmation with adjusted Z position
-→ User approves
-→ Robot places with offset
-```
+</details>
 
-**Handover:**
+<details>
+<summary><b>Stacking</b></summary>
+
 ```
-User: "hand me the tool"
-→ System detects hand position
-→ Robot moves to handover height
-→ Opens gripper
+You:    "stack the small cube on top of the red block"
+Robot:  [Calculates height] ✓ [Adjusts offset]
+You:    [Confirms]
+Robot:  [Places with precision offset]
 ```
 
-**Home and dance:**
-```
-User: "go home"
-→ Confirmation: "Return to home position?"
-→ User approves
-→ Robot moves to safe configuration
+</details>
 
-User: "dance"
-→ Confirmation: "Perform dance sequence?"
-→ User approves
-→ Robot performs 7-position creative motion
+<details>
+<summary><b>Handover</b></summary>
+
+```
+You:    "hand me the tool"
+Robot:  [Detects hand position] ✓ [Moves to height]
+Robot:  [Opens gripper] ✓
 ```
 
-### Confirmation Flow
+</details>
 
-All pick/place/handover/go_home/dance actions require confirmation:
+<details>
+<summary><b>Special Commands</b></summary>
 
-1. System analyzes command
-2. For object operations: VLM detects object and computes 3D position
-3. Web dashboard shows:
-   - Action description
-   - Target object/location
-   - Robot-frame coordinates (X, Y, Z)
-   - Approve/Reject buttons
-4. User clicks "Approve" or "Reject"
-5. If approved, motion executes
-6. Status updates in real-time
+```
+You:    "go home" → [Safe reset position]
+You:    "dance" → [7-position creative motion]
+```
 
-## Testing
+</details>
 
-### Test Individual Packages
+---
 
-Each package has detailed testing instructions in its README:
+## Packages (2️⃣)
 
-- [Coordinator Testing](src/franka_coordinator/README.md#testing)
-- [LLM Planner Testing](src/franka_llm_planner/README.md#testing)
-- [Motion Executor Testing](src/franka_motion_executor/README.md#testing)
-- [VLM Agent Testing](src/franka_vlm_agent/README.md#testing)
+<table>
+<tr>
+<td width="15%">
 
-### Integration Test
+### 1️⃣ franka_coordinator
 
+</td>
+<td>
+
+**Central coordination & 3D transforms**
+
+- Bridges all components
+- VLM grounding & depth→3D conversion  
+- ArUco calibration
+- User confirmation flow
+
+[Full docs](src/franka_coordinator/README.md)
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+### 2️⃣ franka_llm_planner
+
+</td>
+<td>
+
+**Natural language understanding**
+
+- LLaMA 3.1 8B command parsing
+- Intent routing to agents
+- Response generation
+
+[Full docs](src/franka_llm_planner/README.md)
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+### 3️⃣ franka_motion_executor
+
+</td>
+<td>
+
+**Motion planning & execution**
+
+- MoveIt2 integration
+- Pick, place, handover, dance primitives
+- Safety constraints
+
+[Full docs](src/franka_motion_executor/README.md)
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+### 4️⃣ franka_vlm_agent
+
+</td>
+<td>
+
+**Scene understanding**
+
+- Qwen2.5-VL 32B object detection
+- Visual grounding with bounding boxes
+- Debug visualizations
+
+[Full docs](src/franka_vlm_agent/README.md)
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+### 5️⃣ franka_vision_detection
+
+</td>
+<td>
+
+**Legacy vision** *(deprecated)*
+
+Being replaced by modern VLM agent
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+### 6️⃣ realsense_cameras
+
+</td>
+<td>
+
+**RGB-D sensing**
+
+Intel RealSense D435i integration
+
+[Full docs](src/realsense_cameras/README.md)
+
+</td>
+</tr>
+</table>
+
+---
+
+## Testing & Troubleshooting (3️⃣)
+
+<details>
+<summary><b>Common Issues & Fixes</b></summary>
+
+| Issue | Root Cause | Solution |
+|-------|-----------|----------|
+| Web UI not loading | Server not started | `cd ui && python3 -m http.server 8000` |
+| "Connection refused" Ollama | Service down | `ollama serve` then verify: `ollama list` |
+| VLM slow (30+ sec) | CPU inference or low GPU mem | Use GPU: `nvidia-smi` or smaller model: `qwen2.5vl:7b` |
+| Robot doesn't move | Missing controllers | See MoveIt section below |
+| Confirmation dialog missing | Web handler out of sync | Restart web_handler after UI server |
+| Incorrect 3D positions | Bad calibration | Verify ArUco: `ls ~/franka-llm/calibration/` |
+| Camera "depth stream failure" | Hardware not reset | Unplug USB, wait 3s, replug: `./restart_node.sh camera` |
+
+</details>
+
+<details>
+<summary><b>MoveIt Controller Issues (Common)</b></summary>
+
+**Symptom**: `ros2 control list_controllers` shows "No controllers are currently loaded!"
+
+**Root Cause**: Network-connected robot hardware (172.16.0.2) doesn't initialize fast enough
+
+**Solution** (manual workaround):
 ```bash
-# Full system test sequence:
-1. Start all nodes (see "Running the System" above)
-2. Place a colorful object in camera view
-3. Open web dashboard (http://localhost:8000)
-4. Send command: "pick up the [color] [object]"
-5. Verify:
-   - LLM processes command ✓
-   - VLM detects object ✓
-   - 3D position displayed ✓
-   - Confirmation dialog appears ✓
-6. Click "Approve"
-7. Verify:
-   - Motion executes ✓
-   - Status updates ✓
-   - Robot picks object ✓
-8. Send command: "place it on the table"
-9. Approve and verify place executes ✓
-```
+# 1. Let MoveIt start (wait 15-20 seconds)
+ros2 launch franka_llm_planner moveit.launch.py
 
-## Troubleshooting
+# 2. In another terminal, manually load:
+ros2 control load_controller joint_state_broadcaster --set-state active
+ros2 control load_controller franka_robot_state_broadcaster --set-state active
+ros2 control load_controller fr3_arm_controller --set-state active
 
-### Common Issues
-
-**Issue**: Web UI not loading
-- **Fix**: Ensure web server started first: `cd ui && python3 -m http.server 8000`
-- Check port not in use: `lsof -i :8000`
-
-**Issue**: "Connection refused" to Ollama
-- **Fix**: Start Ollama service: `ollama serve`
-- Verify models: `ollama list`
-
-**Issue**: VLM very slow (30+ seconds)
-- **Fix**: 
-  - Use GPU: Check `nvidia-smi`
-  - Use smaller model: `qwen2.5vl:7b`
-  - Check GPU memory
-
-**Issue**: Robot doesn't move
-- **Fix**:
-  - Check MoveIt is running: `ros2 node list | grep move_group`
-  - Check motion executor: `ros2 node list | grep motion_executor`
-  - Verify controllers loaded: `ros2 control list_controllers`
-
-**Issue**: MoveIt controllers not loaded (shows "No controllers are currently loaded!")
-- **Cause**: Controller spawner processes timeout before `ros2_control` connects to robot hardware (172.16.0.2). This is a timing issue with network-connected robots.
-- **Fix**: Manually load controllers after MoveIt starts:
-  ```bash
-  # Wait 15-20 seconds after launching MoveIt, then:
-  ros2 control load_controller joint_state_broadcaster --set-state active
-  ros2 control load_controller franka_robot_state_broadcaster --set-state active
-  ros2 control load_controller fr3_arm_controller --set-state active
-  
-  # Verify all loaded:
-  ros2 control list_controllers
-  ```
-- **Expected output**: All controllers show `[active]`
-- **Note**: The gripper controller may fail to load - this is okay for basic motion testing
-
-**Issue**: Camera "depth stream start failure"
-- **Cause**: RealSense hardware didn't fully reset between sessions
-- **Fix**: 
-  1. Use restart script: `./restart_node.sh camera`
-  2. If still failing: Unplug USB cable, wait 3 seconds, plug back in
-  3. Then restart: `./restart_node.sh camera`
-
-**Issue**: Confirmation not appearing
-- **Fix**:
-  - Restart web_handler (must start AFTER web UI server)
-  - Check rosbridge: `ros2 node list | grep rosbridge`
-  - Check browser console for errors
-
-**Issue**: Incorrect 3D positions
-- **Fix**:
-  - Verify ArUco calibration exists: `ls ~/franka-llm/calibration/`
-  - Adjust offsets in config.yaml:
-    ```yaml
-    camera:
-      aruco_offset_x: 0.0  # Adjust these
-      aruco_offset_y: 0.0
-      aruco_offset_z: 0.0
-    ```
-
-### Debug Tools
-
-```bash
-# Check all nodes running
-ros2 node list
-
-# Check MoveIt controllers status (IMPORTANT!)
+# 3. Verify all active:
 ros2 control list_controllers
-# Should show: joint_state_broadcaster, franka_robot_state_broadcaster, fr3_arm_controller [all active]
+# Expected: [active] for all three
+```
 
-# Restart individual nodes
-./restart_node.sh motion     # Motion executor
-./restart_node.sh moveit     # MoveIt (takes 15-20s to initialize)
-./restart_node.sh camera     # RealSense cameras
-./restart_node.sh ui         # Web UI server
+</details>
 
-# Monitor specific topic
-ros2 topic echo /motion/status
+<details>
+<summary><b>Debug Tools</b></summary>
 
-# Check node status
-ros2 node info /coordinator_node
+```bash
+# System status
+ros2 node list                    # All nodes
+ros2 control list_controllers     # MoveIt status
+ros2 topic list | grep motion     # Motion topics
 
-# View debug images
+# Monitor live data
+ros2 topic echo /motion/status    # Motion updates
+ros2 node info /coordinator_node  # Node details
+
+# View debug outputs
 ls ~/franka-llm/debug_images/
 eog ~/franka-llm/debug_images/vlm_debug_*.jpg
 
-# Check configuration loading
-grep "Configuration" <(ros2 run franka_motion_executor motion_executor 2>&1)
+# Restart individual nodes
+./restart_node.sh motion          # Motion executor
+./restart_node.sh moveit          # MoveIt
+./restart_node.sh camera          # RealSense
+./restart_node.sh ui              # Web UI
 ```
 
-## Development
+</details>
+
+---
+
+## Evaluation & Results (4️⃣)
+
+<b>Benchmark Performance (180 trials)</B>
+
+[Full CSV Results](robot_llm_vlm_experiments.csv)
+
+
+---
+
+## Documentation (5️⃣)
+
+| Resource | Purpose |
+|----------|---------|
+| [Architecture](docs/architecture.md) | System design & component interactions |
+| [Setup Guide](docs/setup.md) | Detailed installation instructions |
+| [Metrics](docs/metrics.md) | Performance evaluation criteria |
+| [System Log](docs/system_log.txt) | Experiment logs & timestamps |
+| [Experiment Results](robot_llm_llm_experiments.csv) | Benchmark data (180ials) |
+| [Running Guide](RUNNING.md) | Full operation manual |
+| [VLM Setup](src/franka_vlm_agent/VLM_QUICKSTART.md) | Vision model configuration |
+
+---
+
+## Development & Contributing (6️⃣)
+
+<details>
+<summary><b>Development Workflow</b></summary>
 
 ### Branch Structure
-
-- **`main`** - Stable baseline for milestone releases
-- **`dev`** - Active development (current branch)
-- **`demo-*`** - Demo snapshots for presentations
-
-### Workflow
-
-1. Develop features in `dev` branch
-2. Test thoroughly
-3. Create demo branch for presentations
-4. Merge to `main` at milestones
+```
+main             ← Stable releases
+  └─ dev         ← Active development
+       └─ demo-* ← Demo snapshots
+```
 
 ### Adding New Features
 
-1. **New action type**:
-   - Update LLM prompt in `franka_llm_planner`
-   - Add handler in `motion_executor_node.py`
-   - Test with topic pub before full integration
+**1. New Command Type**
+```python
+# 1. Update LLM prompt (franka_llm_planner/llm_node.py)
+# 2. Add motion handler (franka_motion_executor/motion_executor_node.py)
+# 3. Test: ros2 service call /motion/execute ...
+# 4. Add UI elements if needed
+```
 
-2. **New placement type**:
-   - Add logic in `coordinator_node.py` → `handle_vlm_grounding()`
-   - Update LLM prompt to recognize new type
-   - Add examples in system prompt
+**2. New Placement Strategy**
+```python
+# Update: coordinator_node.py → handle_vlm_grounding()
+# Update: LLM system prompt with examples
+# Test with real objects
+```
 
-3. **Configuration changes**:
-   - All changes go in `config.yaml`
-   - No code modifications needed
-   - Restart affected nodes
+**3. Configuration-Only Changes**
+```yaml
+# Just update config.yaml - NO code changes needed
+# Restart affected nodes to apply
+```
 
+</details>
 
-## Safety
+<details>
+<summary><b>Contributing Guidelines</b></summary>
 
-### Built-in Safety Features
+### Steps
+1. **Fork** the repository
+2. **Create branch**: `git checkout -b feature/your-feature`
+3. **Make changes** with tests
+4. **Run**: `colcon test && colcon build`
+5. **Submit PR** with clear description
 
-1. **User Confirmation** - All motions require approval
-2. **Velocity Scaling** - Slow, controlled movements (10-50%)
-3. **Safe Height** - Navigate at 0.60m to avoid collisions
+### Questions?
+- arash.ghasemzadehkakroudi@tuni.fi
+- roel.pieters@tuni.fi
+- [Open GitHub issue](https://github.com/Arashghsz/franka-llm/issues)
 
-### Safety Recommendations
+</details>
 
-- Keep workspace clear of obstacles
-- Monitor robot during operation
-- Test new commands at low velocity first
-- Use emergency stop if needed
-- Maintain proper lighting for camera
+---
 
-## Documentation
+### Important Disclaimers
 
-- [Architecture](docs/architecture.md)
-- [Setup Guide](docs/setup.md)
-- [Experiment Metrics](docs/metrics.md)
-- [Experiment Results (CSV)](robot_llm_vlm_experiments.csv) - Detailed benchmark results with model performance metrics
-- [Experiment System Log](docs/system_log.txt)
+**This is a high-powered robotic system.** Users are responsible for safe operation. The authors and institution make no warranty and assume no liability for injuries or property damage resulting from operation of this system.
 
-## Contributing
+---
 
-This is a research project. For questions or collaboration:
-- Open GitHub issues
-- Submit pull requests
-- Contact: arash.ghasemzadehkakroudi@tuni.fi | roel.pieters@tuni.fi
+## License & Attribution
 
-**Affiliation:** Automation Technology and Mechanical Engineering, Tampere University, Finland
+<div align="center">
 
-## License
+**Licensed under Apache License 2.0**
 
-This project is licensed under the **Apache License 2.0** - see the [LICENSE](LICENSE) file for full details.
+[View full license](LICENSE)
 
-**Copyright** © 2026 Arash Ghasemzadeh Kakroudi and Roel Pieters
+© 2026 **Arash Ghasemzadeh Kakroudi** and **Roel Pieters**  
+*Automation Technology and Mechanical Engineering*  
+*Tampere University, Finland*
 
-## Acknowledgments
+</div>
 
-- Franka Emika for FR3 robot platform
-- ROS2/MoveIt2 community
-- Ollama for local LLM/VLM inference
-- Meta (LLaMA), Alibaba (Qwen2.5-VL) for open models
+---
+
+<div align="center">
+
+### Ready to Get Started?
+
+**[Quick Start](#quick-start)** | **[Documentation](docs/architecture.md)** | **[Report Issues](https://github.com/Arashghsz/franka-llm/issues)**
+
+Made with ❤️ for robotics research
+
+</div>
