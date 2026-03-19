@@ -1,24 +1,12 @@
 # Franka LLM - Intelligent Robotic Manipulation System
 
+![System Overview](figures/fig1-intro.png)
+
 **Version**: 1.0.0 | **Status**: Production Ready | **Release Date**: March 2026
 
 **Project**: Natural language-driven robotic manipulation using Vision-Language Models and LLMs  
 **Robot**: Franka Emika FR3 7-DOF arm with gripper  
 **Framework**: ROS2 Jazzy, MoveIt2, Ollama (LLaMA 3.1 + Qwen2.5-VL)
-
-## 🎉 Release v1.0.0
-
-Complete production-ready system for natural language robotic manipulation. This release includes:
-
-- ✅ **Full LLM Integration** - LLaMA 3.1 8B for command understanding
-- ✅ **Advanced Vision** - Qwen2.5-VL 32B for object detection and grounding
-- ✅ **Modern Web Dashboard** - Real-time monitoring, confirmation dialogs, VLM image display
-- ✅ **Complete Documentation** - Setup guides, architecture docs, running instructions
-- ✅ **Centralized Configuration** - Single `config.yaml` for all settings
-- ✅ **Safety First** - User confirmation workflow for all motions
-- ✅ **Production Tested** - Stable on Franka FR3 with real-world objects
-
-[View Release Notes](https://github.com/Arashghsz/franka-llm/releases/tag/v1.0.0)
 
 ## Overview
 
@@ -42,58 +30,51 @@ This system enables natural language control of a Franka FR3 robot arm for pick-
 ✅ Centralized configuration in `config.yaml`  
 ✅ Debug image visualization  
 
-## Architecture
+## System Architecture
 
-```
-┌─────────────────┐
-│   Web Browser   │ ← User Interface (localhost:8000)
-│   (Dashboard)   │
-└────────┬────────┘
-         │ WebSocket (rosbridge)
-         ↓
-┌─────────────────┐      ┌──────────────────┐
-│  Web Handler    │ ←──→ │   Coordinator    │
-└────────┬────────┘      └────────┬─────────┘
-         │                        │
-         ↓                        ↓
-┌─────────────────┐      ┌──────────────────┐      ┌─────────────────┐
-│ LLM Coordinator │ ←──→ │   VLM Agent      │ ←──→ │ RealSense       │
-│ (LLaMA 3.1 8B)  │      │ (Qwen2.5-VL 32B) │      │ Camera          │
-└────────┬────────┘      └──────────────────┘      └─────────────────┘
-         │
-         ↓
-┌─────────────────┐      ┌──────────────────┐
-│ Motion Executor │ ───→ │   Franka FR3     │
-│   (MoveIt2)     │      │   Robot Arm      │
-└─────────────────┘      └──────────────────┘
-```
+![System Dataflow](figures/fig2_dataflow_franka-llm.drawio.png)
 
-## System Screenshots
+Commands flow through natural language understanding (LLaMA 3.1 8B), vision grounding (Qwen2.5-VL 32B), coordinate transformation via ArUco calibration, and motion execution via MoveIt2 with real-time feedback through the web dashboard.
 
-### Web Dashboard
+## Results
 
-![Live system monitoring view](docs/Live-system-monitoring-view.png)
+### Web Interface
 
-### Command and Status View
+![Dashboard](figures/Live-system-monitoring-view.png) ![Confirmation](figures/User-confirmation-dialog.png)
 
-![Command and status panel](docs/Command-and-status-panel.png)
+### Evaluation & Performance
 
-### Confirmation Workflow
+**Object Detection Accuracy**
 
-![User confirmation dialog](docs/User-confirmation-dialog.png)
+[Successful detections](figures/evaluation/successful-object-detection.pdf) | [Detection challenges](figures/evaluation/failed-object-detection.pdf)
 
-### Live Monitoring
+**Task Execution Success Rates**
 
-![Web dashboard overview](docs/Web-dashboard-overview.png)
+*Pick Tasks:* [Single objects](figures/evaluation/pickup_single.pdf) | [Overlapped objects](figures/evaluation/pickup_overlapped.pdf) | [Multiple objects](figures/evaluation/pickup_multiple.pdf)
 
-### Featured Experiment Photo + Special Reasoning
+*Placement Tasks:* [Single target](figures/evaluation/place_single.pdf) | [Overlapped placement](figures/evaluation/place_overlapped.pdf) | [Multiple targets](figures/evaluation/place_multiple.pdf)
 
-![Featured experiment: pick yellow dice](docs/FEATURED-pick_yellow_dice_with_the_highest_value_ministral-3-8b_qwen2.5vl-32b_Mar12_19-39-03.jpg)
+*Handover Tasks:* [Single handover](figures/evaluation/handover_single.pdf) | [Overlapped scenarios](figures/evaluation/handover_overlapped.pdf) | [Sequential handovers](figures/evaluation/handover_multiple.pdf)
 
-This featured capture represents the full reasoning chain used in our benchmark:
+### Video Demonstrations
 
-- **Intent reasoning (LLM):** The command is interpreted as a manipulation request (`pick`) and routed to both perception and motion modules.
-- **Grounding reasoning (VLM):** The target object (`yellow dice with highest value which is 6 in a normal dice`) is localized from camera input before any motion is planned.
+**Pick & Place with Franka FR3**
+
+Real time demonstration of the system picking up object based on natural language commands and placing them at target locations.
+
+<video width="640" height="480" controls>
+  <source src="recordings/pick&place_withFranka.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+**Scene Description & Understanding**
+
+The system analyzes the workspace, detects multiple objects, and describes what it sees.
+
+<video width="640" height="480" controls>
+  <source src="recordings/scene-description_withFranka.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
 
 
 ## Packages
@@ -146,19 +127,19 @@ Intel RealSense camera integration for RGB-D sensing.
 - Python 3.10+
 - ROS2 Jazzy
 - MoveIt2
-- Ollama with models: `llama3.1:8b`, `qwen2.5vl:32b`
+- Ollama with models: `ministral-3:8b`, `qwen2.5vl:32b`
 - NVIDIA GPU (recommended for VLM)
 
 ### Installation
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/yourusername/franka-llm.git
+git clone https://github.com/Arashghsz/franka-llm.git
 cd franka-llm
 
 # 2. Install Ollama and models
 curl -fsSL https://ollama.com/install.sh | sh
-ollama pull llama3.1:8b
+ollama pull ministral-3:8b
 ollama pull qwen2.5vl:32b
 
 # 3. Install Python dependencies (if any)
@@ -177,7 +158,7 @@ All configuration is in `config.yaml`. Key parameters:
 
 ```yaml
 llm:
-  model: "llama3.1:8b"
+  model: "ministral-3:8b"
   base_url: "http://localhost:11434"
 
 vlm:
@@ -428,29 +409,6 @@ grep "Configuration" <(ros2 run franka_motion_executor motion_executor 2>&1)
    - No code modifications needed
    - Restart affected nodes
 
-### Code Style
-
-- Python: PEP 8
-- ROS2: Follow ROS conventions
-- Comments: Explain why, not what
-- Logging: Use appropriate levels (info, warn, error)
-
-## Performance
-
-### Typical Latencies
-
-- LLM inference: 0.5-2 seconds
-- VLM inference: 1-5 seconds (GPU) / 20-60 seconds (CPU)
-- Motion planning: 1-3 seconds
-- Motion execution: 8-12 seconds (pick/place)
-- **Total pick operation**: 12-20 seconds
-
-### Optimization
-
-- Use GPU for VLM (critical)
-- Reduce image resolution for faster VLM
-- Lower max_tokens in config
-- Use faster models (llama3.1:8b, qwen2.5vl:7b)
 
 ## Safety
 
@@ -459,9 +417,6 @@ grep "Configuration" <(ros2 run franka_motion_executor motion_executor 2>&1)
 1. **User Confirmation** - All motions require approval
 2. **Velocity Scaling** - Slow, controlled movements (10-50%)
 3. **Safe Height** - Navigate at 0.60m to avoid collisions
-4. **Collision Avoidance** - MoveIt2 collision checking
-5. **Planning Validation** - Verify trajectory before execution
-6. **Emergency Stop** - Web dashboard has stop button
 
 ### Safety Recommendations
 
@@ -478,22 +433,14 @@ grep "Configuration" <(ros2 run franka_motion_executor motion_executor 2>&1)
 - [Experiment Metrics](docs/metrics.md)
 - [Experiment System Log](docs/system_log.txt)
 
-## Citations & References
-
-Based on research in:
-- Vision-Language Models for robotics
-- Natural language robot control
-- Human-robot interaction
-- Pick and place manipulation
-
-See [Literature Review](docs/literature-review-and-roman2026.md) for details.
-
 ## Contributing
 
 This is a research project. For questions or collaboration:
 - Open GitHub issues
 - Submit pull requests
-- Contact project maintainers
+- Contact: arash.ghasemzadehkakroudi@tuni.fi | roel.pieters@tuni.fi
+
+**Affiliation:** Automation Technology and Mechanical Engineering, Tampere University, Finland
 
 ## License
 

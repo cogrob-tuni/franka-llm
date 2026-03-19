@@ -2,13 +2,11 @@
 
 ## Overview
 
+![System Architecture Diagram](../figures/fig2_dataflow_franka-llm.drawio.png)
+
 Natural language control of Franka FR3 robot using LLM + VLM:
 
-```
-Web Dashboard → Web Handler → LLM Coordinator → VLM Agent → Coordinator → Motion Executor → Robot
-                                                       ↓
-                                                  RealSense Camera
-```
+The system pipeline processes user commands through natural language understanding, vision grounding, coordinate transformation, and motion execution with real-time feedback.
 
 ## Core Components
 
