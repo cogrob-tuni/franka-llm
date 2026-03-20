@@ -1,5 +1,6 @@
+<div align="center">
 # A Conversational framework for Human-Robot Collaborative Manipulation with Distributed AI models
-
+</div>
 
 
 <div align="center">
