@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A Distributed Conversational Framework for Human-Robot Collaborative Manipulation Using Local LLMS and VLMS.">
+  <meta property="og:title" content="A Distributed Conversational Framework for Human-Robot Collaborative Manipulation Using Local LLMS and VLMS">
+  <meta property="og:description" content="Conversational human-robot collaborative manipulation with local language and vision-language models.">
+  <meta property="og:image" content="media/featured-pick.jpg">
+  <title>A Distributed Conversational Framework for Human-Robot Collaborative Manipulation Using Local LLMS and VLMS</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="header"><div class="container nav"><a class="wordmark" href="#top">FRANKA<span>-LLM</span></a><nav><a href="#method">Method</a><a href="#results">Results</a><a href="#paper">Paper</a></nav><a class="github" href="https://github.com/cogrob-tuni/franka-llm">Code ↗</a></div></header>
+  <main id="top">
+    <section class="hero"><div class="container hero-inner"><p class="kicker">RO-MAN 2026 · Tampere University</p><h1>A Distributed Conversational Framework for Human-Robot Collaborative Manipulation Using Local LLMS and VLMS</h1><p class="authors"><a href="https://scholar.google.com/citations?hl=en&amp;user=sCcYdRsAAAAJ">Arash Ghasemzadeh Kakroudi ↗</a> &nbsp;·&nbsp; <a href="https://scholar.google.com/citations?user=YYKF6BYAAAAJ&amp;hl=en&amp;oi=ao">Roel Pieters ↗</a></p><p class="affiliation">Tampere University, Tampere, Finland</p><p class="venue-note">Accepted to <strong>IEEE International Conference on Robot and Human Interactive Communication (RO-MAN) 2026</strong><br>in Kitakyushu, Fukuoka, Japan</p><div class="paper-links"><a class="button primary" href="https://ieeexplore.ieee.org/abstract/document/11714760">IEEE Xplore ↗</a><a class="button" href="https://arxiv.org/abs/2606.06061">arXiv ↗</a><a class="button" href="https://github.com/cogrob-tuni/franka-llm">Code ↗</a></div></div></section>
+
+    <section class="feature"><div class="container"><figure class="hero-video"><img src="media/pick-place.gif" alt="Franka FR3 executing a pick and place task"><figcaption>Natural-language pick-and-place execution on a Franka FR3.</figcaption></figure></div></section>
+
+    <section class="section intro"><div class="container narrow"><p class="kicker">Abstract</p><p class="abstract">This paper presents a distributed conversational framework for human-robot collaborative manipulation that integrates local language and vision-language models with a Robot Operating System 2 (ROS 2)-based execution stack. Language understanding, visual grounding, orchestration, and motion execution run as separate ROS 2 nodes, enabling flexible deployment across distributed hardware while maintaining a responsive control loop.</p><p class="abstract">From free-form user commands, the system generates structured action requests for pick, place, and handover. A vision-language model returns image-space targets, which are converted into metric robot-frame goals using depth and calibration. A web dashboard exposes intermediate intent and grounding overlays and requires explicit operator confirmation before any motion is executed.</p></div></section>
+
+    <section id="method" class="section method"><div class="container"><div class="section-heading"><p class="kicker">Method</p><h2>From language to motion.</h2><p>The system separates what the user means, where the target is, and how the robot should move.</p></div><img class="architecture" src="media/architecture.png" alt="Franka-LLM system data flow diagram" loading="lazy"><div class="contributions"><article><b>01</b><h3>Distributed models</h3><p>Local LLM and VLM nodes route instructions and ground objects without relying on a monolithic policy.</p></article><article><b>02</b><h3>Inspectable grounding</h3><p>Intent, pixel, depth, and robot-frame representations remain visible through the dashboard.</p></article><article><b>03</b><h3>Operator oversight</h3><p>An explicit confirmation step separates model suggestions from physical robot execution.</p></article></div></div></section>
+
+    <section id="results" class="section results"><div class="container"><div class="section-heading"><p class="kicker">Experiments</p><h2>Evaluated on a Franka FR3.</h2><p>End-to-end experiments cover pick, place, and handover under increasing scene ambiguity.</p></div><div class="best-result"><div><span class="best-label">Best recorded LLM / VLM configuration</span><h3>Mistral 3 8B (Jetson) + Qwen2.5-VL 32B</h3><p><strong>45 / 45 successful trials</strong> across the recorded configuration benchmark.</p></div><span class="best-score">100%</span></div><div class="result-summary"><div><strong>180</strong><span>benchmark trials in total</span></div><div><strong>3</strong><span>manipulation tasks</span></div><div><strong>27.93 s</strong><span>reported mean latency</span></div></div><p class="note">The highlighted configuration is the strongest recorded LLM/VLM pairing in the project data. For the complete comparison, task breakdown, and evaluation definitions, see the <a href="https://github.com/cogrob-tuni/franka-llm/blob/main/robot_llm_vlm_experiments.csv">full experiment data</a> and <a href="https://github.com/cogrob-tuni/franka-llm/blob/main/docs/metrics.md">metrics documentation</a>.</p></div></section>
+
+    <section id="paper" class="section paper"><div class="container paper-grid"><div><p class="kicker">Publication</p><h2>A Distributed Conversational Framework for Human-Robot Collaborative Manipulation Using Local LLMS and VLMS</h2><p class="paper-meta"><strong>Accepted to RO-MAN 2026 in Kitakyushu, Fukuoka, Japan.</strong></p><p class="paper-meta">The paper is available through <i>IEEE Xplore</i> and as an arXiv preprint.</p><p class="paper-meta">DOI: <a href="https://doi.org/10.1109/ro-man72286.2026.11714760">10.1109/ro-man72286.2026.11714760</a></p><div class="paper-links"><a class="button primary" href="https://ieeexplore.ieee.org/abstract/document/11714760">Read the paper ↗</a><a class="button" href="https://arxiv.org/abs/2606.06061">Preprint ↗</a></div></div><div class="citation"><div class="citation-head"><span>BibTeX</span><button id="copy" type="button">Copy citation</button></div><pre id="citation">@inproceedings{kakroudi2026distributed,
+  author    = {Ghasemzadeh Kakroudi, Arash and Pieters, Roel},
+  title     = {A Distributed Conversational Framework for
+               Human-Robot Collaborative Manipulation Using
+               Local LLMs and VLMs},
+  booktitle = {2026 IEEE 35th International Conference on
+               Robot and Human Interactive Communication (RO-MAN)},
+  year      = {2026},
+  pages     = {2038--2045},
+  doi       = {10.1109/RO-MAN72286.2026.11714760}
+}</pre><p id="copy-status" class="copy-status" aria-live="polite"></p></div></div></section>
+
+    <section class="section resources"><div class="container resources-inner"><div><p class="kicker">Resources</p><h2>Explore the project.</h2></div><div class="resource-list"><a href="https://github.com/cogrob-tuni/franka-llm">Source code <span>↗</span></a><a href="https://github.com/cogrob-tuni/franka-llm/blob/main/docs/setup.md">Setup guide <span>↗</span></a><a href="https://github.com/cogrob-tuni/franka-llm/blob/main/docs/architecture.md">Architecture notes <span>↗</span></a><a href="https://github.com/cogrob-tuni/franka-llm/blob/main/RUNNING.md">Running guide <span>↗</span></a></div></div></section>
+  </main>
+  <footer><div class="container"><span>Franka-LLM · CogRob, Tampere University</span><a href="https://github.com/cogrob-tuni/franka-llm">GitHub ↗</a></div></footer>
+  <script src="script.js"></script>
+</body>
+</html>
