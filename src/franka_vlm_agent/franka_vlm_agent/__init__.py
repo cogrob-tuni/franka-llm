@@ -1,1 +1,0 @@
-"""Franka VLM Agent Package"""
