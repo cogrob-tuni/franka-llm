@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "published": true,
+  "title": "Franka-LLM",
+  "description": "A distributed conversational framework for human-robot collaborative manipulation using local language and vision-language models.",
+  "authors": [
+    "Arash Ghasemzadeh Kakroudi",
+    "Roel Pieters"
+  ],
+  "year": 2026,
+  "url": "https://cogrob-tuni.github.io/franka-llm/",
+  "repository": "https://github.com/cogrob-tuni/franka-llm",
+  "image": "media/featured-pick.jpg",
+  "order": 10
+}
