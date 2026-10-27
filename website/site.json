@@ -9,6 +9,7 @@
   ],
   "year": 2026,
   "url": "https://cogrob-tuni.github.io/franka-llm/",
+  "repository": "https://github.com/cogrob-tuni/franka-llm",
   "image": "media/featured-pick.jpg",
   "order": 10
 }
